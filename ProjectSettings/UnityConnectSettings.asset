@@ -11,6 +11,7 @@ UnityConnectSettings:
   m_ConfigUrl: https://config.uca.cloud.unity3d.com
   m_DashboardUrl: https://dashboard.unity3d.com
   m_TestInitMode: 0
+<<<<<<< Updated upstream
   InsightsSettings:
     m_EngineDiagnosticsEnabled: 1
     m_Enabled: 0
@@ -18,6 +19,11 @@ UnityConnectSettings:
     serializedVersion: 2
     m_EventUrl: https://perf-events.cloud.unity3d.com
     m_EnableCloudDiagnosticsReporting: 0
+=======
+  CrashReportingSettings:
+    m_EventUrl: https://perf-events.cloud.unity3d.com
+    m_Enabled: 0
+>>>>>>> Stashed changes
     m_LogBufferSize: 10
     m_CaptureEditorExceptions: 1
   UnityPurchasingSettings:

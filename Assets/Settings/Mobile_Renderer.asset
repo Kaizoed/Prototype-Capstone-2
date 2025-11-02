@@ -45,7 +45,11 @@ MonoBehaviour:
     failOperation: 0
     zFailOperation: 0
   m_ShadowTransparentReceive: 0
+<<<<<<< Updated upstream
   m_RenderingMode: 0
+=======
+  m_RenderingMode: 2
+>>>>>>> Stashed changes
   m_DepthPrimingMode: 0
   m_CopyDepthMode: 0
   m_AccurateGbufferNormals: 0
