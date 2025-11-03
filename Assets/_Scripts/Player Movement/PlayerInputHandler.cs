@@ -43,13 +43,13 @@ public class PlayerInputHandler : MonoBehaviour
         movementAction.canceled += inputInfo => MovementInput = Vector2.zero;
 
         rotationAction.performed += inputInfo => rotationInput = inputInfo.ReadValue<Vector2>();
-        rotationAction.performed += inputInfo => rotationInput = Vector2.zero;
+        rotationAction.canceled += inputInfo => rotationInput = Vector2.zero;
 
         crouchAction.performed += inputInfo => crouchTriggered = true;
-        crouchAction.performed += inputInfo => crouchTriggered = false;
+        crouchAction.canceled += inputInfo => crouchTriggered = false;
 
         sprintAction.performed += inputInfo => sprintTriggered = true;
-        sprintAction.performed += inputInfo => sprintTriggered = false;
+        sprintAction.canceled += inputInfo => sprintTriggered = false;
     }
 
     private void OnEnable()
