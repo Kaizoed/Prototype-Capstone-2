@@ -14,6 +14,8 @@ public class EarthquakeController : MonoBehaviour
     public float Intensity { get; private set; } = 0f;
     public bool IsQuaking { get; private set; } = false;
 
+    public EnvironmentShake ActiveEnvironment { get; private set; }
+
     private void Awake()
     {
         Instance = this;
@@ -58,7 +60,12 @@ public class EarthquakeController : MonoBehaviour
             // 2 seconds interval between quakes
             yield return new WaitForSeconds(2f);
         }
-            
+
     }
+    
+    public void SetActiveEnvironment(EnvironmentShake env)
+    {
+        ActiveEnvironment = env;
+    }   
 
 }
