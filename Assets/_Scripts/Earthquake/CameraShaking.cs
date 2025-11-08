@@ -23,10 +23,9 @@ public class CameraShaking : MonoBehaviour
     {
         if (EarthquakeController.Instance == null || !EarthquakeController.Instance.IsQuaking)
         {
-            // Reset when not shaking
-            transform.localPosition = originalLocalPos;
             shakeRotationOffset = Quaternion.identity;
             positionOffset = Vector3.zero;
+            transform.localPosition = originalLocalPos;
             return;
         }
 
@@ -43,6 +42,8 @@ public class CameraShaking : MonoBehaviour
         float rotZ = Mathf.Cos(time * 1.3f) * maxRotation * intensity;
         shakeRotationOffset = Quaternion.Euler(rotX, 0f, rotZ);
 
-        transform.localPosition = originalLocalPos + positionOffset;
+        Vector3 baseLocalPos = new Vector3(originalLocalPos.x, transform.localPosition.y, originalLocalPos.z);
+        transform.localPosition = baseLocalPos + positionOffset;
     }
+
 }

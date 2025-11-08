@@ -537,6 +537,8 @@ GameObject:
   - component: {fileID: 250402382}
   - component: {fileID: 250402386}
   - component: {fileID: 250402387}
+  - component: {fileID: 250402389}
+  - component: {fileID: 250402388}
   m_Layer: 0
   m_Name: Ground
   m_TagString: Untagged
@@ -677,8 +679,36 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0fd598bac8d04904da6d2f632fe3d947, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxMagnitude: 0.3
+  maxMagnitude: 0.1
   frequency: 5
+--- !u!114 &250402388
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 250402380}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0fd598bac8d04904da6d2f632fe3d947, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxMagnitude: 0.5
+  frequency: 8
+--- !u!114 &250402389
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 250402380}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0fd598bac8d04904da6d2f632fe3d947, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxMagnitude: 0.3
+  frequency: 6
 --- !u!1 &257896719 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 2870566218230374871, guid: 8224754fbb3ad3343a89f5f0c3e54501, type: 3}
@@ -2736,7 +2766,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3531254527131978220, guid: e9e75f510dfb2584b8815871c3fdd1ad, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.2399998
+      value: 0.28
       objectReference: {fileID: 0}
     - target: {fileID: 3531254527131978220, guid: e9e75f510dfb2584b8815871c3fdd1ad, type: 3}
       propertyPath: m_LocalRotation.w
