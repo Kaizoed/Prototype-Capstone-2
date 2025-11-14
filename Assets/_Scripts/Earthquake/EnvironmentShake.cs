@@ -22,8 +22,7 @@ public class EnvironmentShake : MonoBehaviour
     private void FixedUpdate()
     {
         if (EarthquakeController.Instance == null || !EarthquakeController.Instance.IsQuaking)
-        
-        return;
+            return;
 
         float intensity = EarthquakeController.Instance.Intensity;
         float time = Time.time * frequency;
@@ -32,7 +31,11 @@ public class EnvironmentShake : MonoBehaviour
         float z = (Mathf.PerlinNoise(0f, time) - 0.5f) * 2f * intensity * maxMagnitude;
 
         Vector3 newPos = originalPos + new Vector3(x, 0f, z);
-
         rb.MovePosition(newPos);
+    }
+
+    public void SetFrequency(float value)
+    {
+        frequency = value;
     }
 }

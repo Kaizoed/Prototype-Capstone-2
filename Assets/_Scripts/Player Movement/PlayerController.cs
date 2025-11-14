@@ -47,6 +47,7 @@ public class PlayerController : MonoBehaviour
         Cursor.visible = false;
 
         defaultCameraHeight = mainCamera.transform.localPosition.y;
+        mainCamera.GetComponent<CameraShaking>().enabled = true;
     }
 
     void Update()
