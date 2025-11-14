@@ -5,60 +5,58 @@ public class EarthquakeController : MonoBehaviour
 {
     public static EarthquakeController Instance { get; private set; }
 
-    [Header("Earthquake Settings")]
-    [SerializeField] private float totalDuration = 8f;
+    [Header("Fade Settings")]
     [SerializeField] private float fadeInTime = 2f;
     [SerializeField] private float fadeOutTime = 2.5f;
-    [SerializeField] private AnimationCurve intensityCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
 
     public float Intensity { get; private set; } = 0f;
     public bool IsQuaking { get; private set; } = false;
     public EnvironmentShake ActiveEnvironment { get; private set; }
+
+    private Coroutine quakeRoutine;
 
     private void Awake()
     {
         Instance = this;
     }
 
-    private void Start()
+    public void StartQuake(float targetIntensity)
     {
-        StartCoroutine(EarthquakeRoutine());
+        if (quakeRoutine != null)
+            StopCoroutine(quakeRoutine);
+
+        quakeRoutine = StartCoroutine(FadeToIntensity(targetIntensity, fadeInTime));
     }
 
-    private IEnumerator EarthquakeRoutine()
+    public void StopQuake()
     {
-        // Infinite demo loop
-        while (true)
+        if (quakeRoutine != null)
+            StopCoroutine(quakeRoutine);
+
+        quakeRoutine = StartCoroutine(FadeToIntensity(0f, fadeOutTime, stopAtEnd: true));
+    }
+
+    private IEnumerator FadeToIntensity(float target, float duration, bool stopAtEnd = false)
+    {
+        IsQuaking = true;
+
+        float start = Intensity;
+        float t = 0f;
+
+        while (t < duration)
         {
-            IsQuaking = true;
-            float elapsed = 0f;
+            t += Time.deltaTime;
+            float lerp = Mathf.Clamp01(t / duration);
+            Intensity = Mathf.Lerp(start, target, lerp);
+            yield return null;
+        }
 
-            while (elapsed < totalDuration)
-            {
-                float normalizedTime = elapsed / totalDuration;
-                float curveValue = intensityCurve.Evaluate(normalizedTime);
+        Intensity = target;
 
-                // Smooth fade-in and fade-out
-                if (elapsed < fadeInTime)
-                    Intensity = Mathf.SmoothStep(0f, curveValue, elapsed / fadeInTime);
-                else if (elapsed > totalDuration - fadeOutTime)
-                {
-                    float fadeOutProgress = (elapsed - (totalDuration - fadeOutTime)) / fadeOutTime;
-                    Intensity = Mathf.SmoothStep(curveValue, 0f, fadeOutProgress);
-                }
-                else
-                    Intensity = curveValue;
-
-                elapsed += Time.deltaTime;
-                yield return null;
-            }
-
-            Intensity = 0f;
+        if (stopAtEnd && target == 0f)
             IsQuaking = false;
 
-            // Wait between earthquakes
-            yield return new WaitForSeconds(2f);
-        }
+        quakeRoutine = null;
     }
 
     public void SetActiveEnvironment(EnvironmentShake env)
