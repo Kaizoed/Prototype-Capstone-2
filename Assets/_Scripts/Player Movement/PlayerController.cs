@@ -17,12 +17,17 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float mouseSensitivity = 0.1f;
     [SerializeField] private float upDownLookRange = 80f;
 
+    [Header("Gravity")]
+    [SerializeField] private float gravity = -9.81f;
+    [SerializeField] private float groundStickForce = -3f;
+
     [Header("References")]
     [SerializeField] private CharacterController characterController;
     [SerializeField] private Camera mainCamera;
     [SerializeField] private PlayerInputHandler playerInputHandler;
 
     private Vector3 currentMovement;
+    private Vector3 velocity;
     private float verticalRotation;
     private float defaultCameraHeight;
     private bool isCrouched;
@@ -32,8 +37,10 @@ public class PlayerController : MonoBehaviour
         get
         {
             float baseSpeed = walkSpeed;
+
             if (playerInputHandler.sprintTriggered && !isCrouched)
                 baseSpeed *= sprintMultiplier;
+
             if (isCrouched)
                 baseSpeed *= crouchSpeedMultiplier;
 
@@ -54,24 +61,52 @@ public class PlayerController : MonoBehaviour
     {
         HandleCrouch();
         HandleMovement();
+        ApplyGravity();
         HandleRotation();
     }
 
+    // ---------------- MOVEMENT ----------------
+
     private Vector3 CalculateWorldDirection()
     {
-        Vector3 inputDirection = new Vector3(playerInputHandler.MovementInput.x, 0f, playerInputHandler.MovementInput.y);
-        Vector3 worldDirection = transform.TransformDirection(inputDirection);
-        return worldDirection.normalized;
+        Vector3 inputDirection = new Vector3(
+            playerInputHandler.MovementInput.x,
+            0f,
+            playerInputHandler.MovementInput.y
+        );
+
+        return transform.TransformDirection(inputDirection).normalized;
     }
 
     private void HandleMovement()
     {
         Vector3 worldDirection = CalculateWorldDirection();
+
         currentMovement.x = worldDirection.x * CurrentSpeed;
         currentMovement.z = worldDirection.z * CurrentSpeed;
 
         characterController.Move(currentMovement * Time.deltaTime);
     }
+
+    // ---------------- GRAVITY & GROUNDING ----------------
+
+    private void ApplyGravity()
+    {
+        if (characterController.isGrounded)
+        {
+            // Keeps player snapped to ground when stepping down
+            if (velocity.y < 0)
+                velocity.y = groundStickForce;
+        }
+        else
+        {
+            velocity.y += gravity * Time.deltaTime;
+        }
+
+        characterController.Move(velocity * Time.deltaTime);
+    }
+
+    // ---------------- CROUCH ----------------
 
     private void HandleCrouch()
     {
@@ -80,10 +115,12 @@ public class PlayerController : MonoBehaviour
         else if (!playerInputHandler.crouchTriggered && isCrouched)
             StopCrouch();
 
-        float targetCameraHeight = isCrouched ? (defaultCameraHeight - cameraCrouchOffset) : defaultCameraHeight;
+        float targetCameraHeight = isCrouched
+            ? (defaultCameraHeight - cameraCrouchOffset)
+            : defaultCameraHeight;
+
         Vector3 camPos = mainCamera.transform.localPosition;
 
-        // If shake script exists, add its offset to camera position
         CameraShaking shake = mainCamera.GetComponent<CameraShaking>();
         Vector3 shakeOffset = shake != null ? shake.ShakePositionOffset : Vector3.zero;
 
@@ -95,13 +132,17 @@ public class PlayerController : MonoBehaviour
     {
         isCrouched = true;
         characterController.height = crouchHeight;
+        characterController.center = new Vector3(0, crouchHeight / 2f, 0);
     }
 
     private void StopCrouch()
     {
         isCrouched = false;
         characterController.height = standHeight;
+        characterController.center = new Vector3(0, standHeight / 2f, 0);
     }
+
+    // ---------------- CAMERA ROTATION ----------------
 
     private void ApplyHorizontalRotation(float rotationAmount)
     {
@@ -110,10 +151,14 @@ public class PlayerController : MonoBehaviour
 
     private void ApplyVerticalRotation(float rotationAmount)
     {
-        verticalRotation = Mathf.Clamp(verticalRotation - rotationAmount, -upDownLookRange, upDownLookRange);
+        verticalRotation = Mathf.Clamp(
+            verticalRotation - rotationAmount,
+            -upDownLookRange,
+            upDownLookRange
+        );
+
         Quaternion lookRotation = Quaternion.Euler(verticalRotation, 0, 0);
 
-        // Combine look rotation with camera shake
         CameraShaking shake = mainCamera.GetComponent<CameraShaking>();
         if (shake != null)
             mainCamera.transform.localRotation = lookRotation * shake.ShakeRotationOffset;
