@@ -6,14 +6,19 @@ public class EnvironmentShake : MonoBehaviour
     [SerializeField] private float maxMagnitude = 0.5f;
     [SerializeField] private float frequency = 8f;
 
-    private Vector3 originalPos;
+    private Vector3 originalLocalPos;
     private Rigidbody rb;
 
-    private void Start()
+    private void Awake()
     {
         rb = GetComponent<Rigidbody>();
         rb.isKinematic = true;
-        originalPos = transform.position;
+        rb.useGravity = false;
+        rb.interpolation = RigidbodyInterpolation.Interpolate;
+        rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+
+        // Use LOCAL position so parent motion doesn't break it
+        originalLocalPos = transform.localPosition;
 
         if (EarthquakeController.Instance != null)
             EarthquakeController.Instance.SetActiveEnvironment(this);
@@ -21,21 +26,38 @@ public class EnvironmentShake : MonoBehaviour
 
     private void FixedUpdate()
     {
+        // Always hold the base position if not quaking
         if (EarthquakeController.Instance == null || !EarthquakeController.Instance.IsQuaking)
+        {
+            rb.MovePosition(transform.parent
+                ? transform.parent.TransformPoint(originalLocalPos)
+                : originalLocalPos);
             return;
+        }
 
         float intensity = EarthquakeController.Instance.Intensity;
-        float time = Time.time * frequency;
+        float t = Time.time * frequency;
 
-        float x = (Mathf.PerlinNoise(time, 0f) - 0.5f) * 2f * intensity * maxMagnitude;
-        float z = (Mathf.PerlinNoise(0f, time) - 0.5f) * 2f * intensity * maxMagnitude;
+        float x = (Mathf.PerlinNoise(t, 0f) - 0.5f) * 2f * intensity * maxMagnitude;
+        float z = (Mathf.PerlinNoise(0f, t) - 0.5f) * 2f * intensity * maxMagnitude;
 
-        Vector3 newPos = originalPos + new Vector3(x, 0f, z);
-        rb.MovePosition(newPos);
+        Vector3 localOffset = new Vector3(x, 0f, z);
+        Vector3 targetWorldPos = transform.parent
+            ? transform.parent.TransformPoint(originalLocalPos + localOffset)
+            : (originalLocalPos + localOffset);
+
+        rb.MovePosition(targetWorldPos);
     }
 
-    public void SetFrequency(float value)
+    // Called when quake stops (optional but useful)
+    public void ResetShake()
     {
-        frequency = value;
+        Vector3 targetWorldPos = transform.parent
+            ? transform.parent.TransformPoint(originalLocalPos)
+            : originalLocalPos;
+
+        rb.MovePosition(targetWorldPos);
     }
+
+    public void SetFrequency(float value) => frequency = value;
 }
