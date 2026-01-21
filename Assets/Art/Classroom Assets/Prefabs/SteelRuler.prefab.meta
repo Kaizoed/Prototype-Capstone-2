@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 0f794b6637312c1489fe98189b01a466
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 75007
+  packageName: Classroom
+  packageVersion: 2.0
+  assetPath: Assets/Classroom/Prefabs/SteelRuler.prefab
+  uploadId: 831844

@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 92f902e5bff04a647a67edc7b3710132
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 75007
+  packageName: Classroom
+  packageVersion: 2.0
+  assetPath: Assets/Classroom/Prefabs/SchoolDesk.prefab
+  uploadId: 831844

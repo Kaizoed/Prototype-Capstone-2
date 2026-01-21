@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 94c7295c9178d2241be91a4554d7d0a6
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 75007
+  packageName: Classroom
+  packageVersion: 2.0
+  assetPath: Assets/Classroom/Prefabs/Shelf.prefab
+  uploadId: 831844

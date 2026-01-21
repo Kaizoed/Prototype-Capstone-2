@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: eca136187313434409b844c76f5405f9
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 112000000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 75007
+  packageName: Classroom
+  packageVersion: 2.0
+  assetPath: Assets/Classroom/DemoScene/ClassRoomStandard/LightingData.asset
+  uploadId: 831844

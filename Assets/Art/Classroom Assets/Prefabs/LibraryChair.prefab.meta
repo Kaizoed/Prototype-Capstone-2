@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: e68e3b3ff2a03df42b5bb1feeda4f1fc
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 75007
+  packageName: Classroom
+  packageVersion: 2.0
+  assetPath: Assets/Classroom/Prefabs/LibraryChair.prefab
+  uploadId: 831844

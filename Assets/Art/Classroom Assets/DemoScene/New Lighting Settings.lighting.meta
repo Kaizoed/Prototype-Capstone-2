@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: afceeff2b1e2d7446b694d738688ee05
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 4890085278179872738
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 75007
+  packageName: Classroom
+  packageVersion: 2.0
+  assetPath: Assets/Classroom/DemoScene/New Lighting Settings.lighting
+  uploadId: 831844

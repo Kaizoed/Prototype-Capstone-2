@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: b379f0864be1b2647b929393713d1068
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 75007
+  packageName: Classroom
+  packageVersion: 2.0
+  assetPath: Assets/Classroom/DemoScene/ClassRoom.unity
+  uploadId: 831844

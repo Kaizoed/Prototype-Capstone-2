@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: d82433197ddfb0b4f87391c06317b52a
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 75007
+  packageName: Classroom
+  packageVersion: 2.0
+  assetPath: Assets/Classroom/Prefabs/SchoolChair.prefab
+  uploadId: 831844

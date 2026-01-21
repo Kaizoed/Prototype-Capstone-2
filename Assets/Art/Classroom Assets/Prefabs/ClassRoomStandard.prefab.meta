@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 5249a3d152b300241bcdefebb0c88f4f
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 75007
+  packageName: Classroom
+  packageVersion: 2.0
+  assetPath: Assets/Classroom/Prefabs/ClassRoomStandard.prefab
+  uploadId: 831844
