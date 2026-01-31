@@ -1539,7 +1539,7 @@ Transform:
   m_GameObject: {fileID: 1534637367}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 1.334}
+  m_LocalPosition: {x: 0, y: 0.528, z: 1.334}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1642,7 +1642,7 @@ Transform:
   m_GameObject: {fileID: 1700399497}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0.534, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2030,12 +2030,12 @@ MonoBehaviour:
   turnDuration: 0.4
   exitCrawlDuration: 0.5
   exitRiseDuration: 0.3
-  hidingCameraHeight: 0.5
+  hidingCameraHeight: -0.5
   maxLookYaw: 45
   maxLookUp: 20
   maxLookDown: 30
-  hidingColliderHeight: -0.25
-  colliderVerticalOffset: 0
+  hidingColliderHeight: 0.5
+  colliderVerticalOffset: 0.25
   grantStaggerImmunity: 1
   shakeMultiplier: 0.25
   entryEasing:
