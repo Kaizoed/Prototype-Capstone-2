@@ -36,6 +36,9 @@ namespace ShakySurvival.Camera
         private bool _noiseInitialized;
         private float _debugLogTimer;
 
+        /// Multiplier for camera shake amplitude. Set to less than 1 to reduce shake (used in cover system).
+        public float ShakeMultiplier { get; set; } = 1f;
+
         private void Awake()
         {
             Debug.Log("[EarthquakeCameraShaker] Awake - Starting initialization...");
@@ -228,7 +231,7 @@ namespace ShakySurvival.Camera
 
             if (_isActive)
             {
-                targetAmplitude = Mathf.Lerp(baseAmplitude, maxAmplitude, _targetIntensity) * stabilityMultiplier;
+                targetAmplitude = Mathf.Lerp(baseAmplitude, maxAmplitude, _targetIntensity) * stabilityMultiplier * ShakeMultiplier;
                 targetFrequency = Mathf.Lerp(baseFrequency, maxFrequency, _targetIntensity);
             }
 

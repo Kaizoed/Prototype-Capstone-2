@@ -34,9 +34,17 @@ namespace ShakySurvival.Player
         private InputActionMap _playerActionMap;
         private InputAction _lookAction;
         private Vector2 _lookInput;
-        private float _xRotation; // Current vertical rotation
+        private float _xRotation;
+        private float _yRotation;
+
+        // Clamping state
+        private bool _isHorizontalClamped;
+        private float _clampCenterYaw;
+        private float _maxYawOffset = 180f;
 
         public bool IsLookLocked { get; private set; }
+        
+        public float CurrentYaw => _yRotation;
 
         private void Awake()
         {
@@ -49,7 +57,7 @@ namespace ShakySurvival.Player
                 }
                 else
                 {
-                    Debug.LogWarning("[PlayerLook] No camera container assigned!");
+                    Debug.LogWarning("No camera container assigned!");
                 }
             }
 
@@ -89,21 +97,21 @@ namespace ShakySurvival.Player
         {
             if (inputActions == null)
             {
-                Debug.LogError("[PlayerLook] InputActionAsset not assigned!");
+                Debug.LogError("InputActionAsset not assigned!");
                 return;
             }
 
             _playerActionMap = inputActions.FindActionMap("Player");
             if (_playerActionMap == null)
             {
-                Debug.LogError("[PlayerLook] 'Player' action map not found!");
+                Debug.LogError("Player action map not found!");
                 return;
             }
 
             _lookAction = _playerActionMap.FindAction("Look");
             if (_lookAction == null)
             {
-                Debug.LogWarning("[PlayerLook] 'Look' action not found - mouse look disabled.");
+                Debug.LogWarning("Look action not found!");
             }
         }
 
@@ -134,7 +142,7 @@ namespace ShakySurvival.Player
             _lookInput = context.ReadValue<Vector2>();
         }
 
-        /// Lock look input (for UI, cutscenes, etc.).
+        // Lock look input (can be used for UI, cutscenes, etc.)
         public void LockLook()
         {
             IsLookLocked = true;
@@ -183,14 +191,61 @@ namespace ShakySurvival.Player
             float mouseX = _lookInput.x * sensitivityX;
             float mouseY = _lookInput.y * sensitivityY;
 
-            // Horizontal rotation - rotate the player body
-            transform.Rotate(Vector3.up * mouseX);
+            // Horizontal rotation
+            _yRotation += mouseX;
+            
+            // Apply horizontal clamping if enabled
+            if (_isHorizontalClamped)
+            {
+                float minYaw = _clampCenterYaw - _maxYawOffset;
+                float maxYaw = _clampCenterYaw + _maxYawOffset;
+                _yRotation = Mathf.Clamp(_yRotation, minYaw, maxYaw);
+            }
+            
+            transform.rotation = Quaternion.Euler(0f, _yRotation, 0f);
 
             // Vertical rotation - rotate the camera container
             _xRotation -= mouseY;
             _xRotation = Mathf.Clamp(_xRotation, -maxLookUp, maxLookDown);
 
             cameraContainer.localRotation = Quaternion.Euler(_xRotation, 0f, 0f);
+        }
+
+        // Enables horizontal look clamping around the current facing direction.
+        public void EnableHorizontalClamp(float maxOffset)
+        {
+            _clampCenterYaw = _yRotation;
+            _maxYawOffset = maxOffset;
+            _isHorizontalClamped = true;
+        }
+
+        // Enables horizontal look clamping around a specific yaw angle.
+        public void EnableHorizontalClamp(float centerYaw, float maxOffset)
+        {
+            _clampCenterYaw = centerYaw;
+            _maxYawOffset = maxOffset;
+            _isHorizontalClamped = true;
+        }
+
+        /// Disables horizontal look clamping.
+        public void DisableHorizontalClamp()
+        {
+            _isHorizontalClamped = false;
+            _maxYawOffset = 180f;
+        }
+
+        // Sets the current yaw rotation directly (used during cover transitions).
+        public void SetYaw(float yaw)
+        {
+            _yRotation = yaw;
+            transform.rotation = Quaternion.Euler(0f, _yRotation, 0f);
+        }
+
+        /// Temporarily overrides vertical look limits.
+        public void SetVerticalLimits(float lookUp, float lookDown)
+        {
+            maxLookUp = lookUp;
+            maxLookDown = lookDown;
         }
     }
 }

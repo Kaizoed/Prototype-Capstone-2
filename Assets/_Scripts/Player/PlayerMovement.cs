@@ -37,6 +37,8 @@ namespace ShakySurvival.Player
         public Vector3 Velocity => _velocity;
         public float SpeedMultiplier { get; private set; } = 1f;
         public Vector3 ExternalDrift { get; private set; } = Vector3.zero;
+        
+        public bool IsCameraHeightOverridden { get; set; }
 
         private CharacterController _controller;
         private Vector3 _velocity;
@@ -265,12 +267,21 @@ namespace ShakySurvival.Player
             _velocity.z = horizontalMove.z;
             _velocity.y += gravity * Time.deltaTime;
 
-            _controller.Move(_velocity * Time.deltaTime);
+            // Only move if controller is enabled (not during cover transitions)
+            if (_controller.enabled)
+            {
+                _controller.Move(_velocity * Time.deltaTime);
+            }
         }
 
         private void UpdateCameraHeight()
         {
             if (cameraContainer == null) return;
+            
+            if (IsCameraHeightOverridden)
+            {
+                return;
+            }
 
             _targetCameraHeight = IsCrouching ? crouchingCameraHeight : standingCameraHeight;
 
