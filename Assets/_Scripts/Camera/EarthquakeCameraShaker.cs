@@ -36,7 +36,9 @@ namespace ShakySurvival.Camera
         private bool _noiseInitialized;
         private float _debugLogTimer;
 
-        /// Multiplier for camera shake amplitude. Set to less than 1 to reduce shake (used in cover system).
+        /// <summary>
+        /// Multiplier for camera shake amplitude. Set to less than 1 to reduce shake (e.g., while in cover).
+        /// </summary>
         public float ShakeMultiplier { get; set; } = 1f;
 
         private void Awake()

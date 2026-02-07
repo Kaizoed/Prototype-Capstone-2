@@ -5,6 +5,8 @@ using ShakySurvival.Camera;
 
 namespace ShakySurvival.Cover
 {
+    // Controls player transitions into and out of cover using anchor-based transforms.
+    // The camera follows the player's head bone, so moving the player body moves the camera.
     public class PlayerCoverController : MonoBehaviour
     {
         [Header("References")]
@@ -22,14 +24,9 @@ namespace ShakySurvival.Cover
         private CoverSpot _activeCoverSpot;
         private Coroutine _transitionCoroutine;
         
-        // Saved values for restoration
-        private float _savedCameraHeight;
-        private float _savedMaxLookUp;
-        private float _savedMaxLookDown;
         private float _savedColliderHeight;
         private Vector3 _savedColliderCenter;
 
-        // Public accessors
         public CoverState CurrentState => _currentState;
         public bool IsInCover => _currentState != CoverState.Idle;
         public bool CanInteract => _currentState == CoverState.Idle || _currentState == CoverState.Hidden;
@@ -43,9 +40,7 @@ namespace ShakySurvival.Cover
             if (cameraShaker == null) cameraShaker = FindFirstObjectByType<EarthquakeCameraShaker>();
         }
 
-        /// <summary>
-        /// Attempts to enter cover at the specified spot.
-        /// </summary>
+        // Attempts to enter cover at the specified spot
         public bool EnterCover(CoverSpot spot)
         {
             if (_currentState != CoverState.Idle)
@@ -71,9 +66,7 @@ namespace ShakySurvival.Cover
             return true;
         }
 
-        /// <summary>
-        /// Attempts to exit the current cover.
-        /// </summary>
+        // Attempts to exit the current cover
         public bool ExitCover()
         {
             if (_currentState != CoverState.Hidden)
@@ -105,12 +98,6 @@ namespace ShakySurvival.Cover
             if (playerStagger != null) playerStagger.IsImmune = _activeCoverSpot.GrantStaggerImmunity;
             if (cameraShaker != null) cameraShaker.ShakeMultiplier = _activeCoverSpot.ShakeMultiplier;
 
-            // Save current camera height for restoration
-            _savedCameraHeight = playerMovement.GetCurrentCameraHeight();
-            
-            // Override camera height control
-            if (playerMovement != null) playerMovement.IsCameraHeightOverridden = true;
-
             // Save and shrink collider BEFORE disabling controller
             if (characterController != null)
             {
@@ -118,15 +105,12 @@ namespace ShakySurvival.Cover
                 _savedColliderCenter = characterController.center;
                 
                 float originalBottom = _savedColliderCenter.y - (_savedColliderHeight / 2f);
-                
-                // New height from cover spot
                 float newHeight = _activeCoverSpot.HidingColliderHeight;
-                
                 float newCenterY = originalBottom + (newHeight / 2f) + _activeCoverSpot.ColliderVerticalOffset;
                 
                 if (debugMode)
                 {
-                    Debug.Log($"[PlayerCoverController] Collider shrink: height {_savedColliderHeight} -> {newHeight}, center.y {_savedColliderCenter.y} -> {newCenterY} (offset: {_activeCoverSpot.ColliderVerticalOffset})");
+                    Debug.Log($"[PlayerCoverController] Collider shrink: height {_savedColliderHeight} -> {newHeight}, center.y {_savedColliderCenter.y} -> {newCenterY}");
                 }
                 
                 characterController.height = newHeight;
@@ -136,28 +120,18 @@ namespace ShakySurvival.Cover
             // Disable CharacterController for direct position control
             if (characterController != null) characterController.enabled = false;
 
-            // Lower (camera) phase
-            if (debugMode) Debug.Log("[PlayerCoverController] Phase 1: Lowering camera");
-            yield return StartCoroutine(LowerPhase());
+            // Unified transition to HideAnchor
+            if (debugMode) Debug.Log("[PlayerCoverController] Transitioning to HideAnchor");
+            yield return StartCoroutine(TransitionRoutine(
+                _activeCoverSpot.HideAnchor,
+                _activeCoverSpot.EntryTransitionDuration,
+                _activeCoverSpot.EntryEasing
+            ));
 
-            // Crawl phase
-            if (debugMode) Debug.Log("[PlayerCoverController] Phase 2: Crawling to anchor");
-            yield return StartCoroutine(CrawlPhase());
-
-            // Camera turn
-            if (debugMode) Debug.Log("[PlayerCoverController] Phase 3: Turning around");
-            yield return StartCoroutine(TurnPhase());
-
-            // Settle phase
-            if (debugMode) Debug.Log("[PlayerCoverController] Phase 4: Settling");
-            
             // Re-enable CharacterController
-            if (characterController != null)
-            {
-                characterController.enabled = true;
-            }
+            if (characterController != null) characterController.enabled = true;
             
-            // Locked camera look
+            // Set up constrained look while hidden
             float facingYaw = _activeCoverSpot.HiddenFacingYaw;
             playerLook?.SetYaw(facingYaw);
             playerLook?.EnableHorizontalClamp(facingYaw, _activeCoverSpot.MaxLookYaw);
@@ -166,73 +140,6 @@ namespace ShakySurvival.Cover
 
             _currentState = CoverState.Hidden;
             if (debugMode) Debug.Log("[PlayerCoverController] State -> Hidden");
-        }
-
-        private IEnumerator LowerPhase()
-        {
-            float elapsed = 0f;
-            float duration = _activeCoverSpot.LowerDuration;
-            float startHeight = _savedCameraHeight;
-            float targetHeight = _activeCoverSpot.HidingCameraHeight;
-
-            while (elapsed < duration)
-            {
-                elapsed += Time.deltaTime;
-                float t = _activeCoverSpot.EntryEasing.Evaluate(elapsed / duration);
-                
-                float currentHeight = Mathf.Lerp(startHeight, targetHeight, t);
-                playerMovement?.SetCameraHeight(currentHeight);
-                
-                yield return null;
-            }
-
-            playerMovement?.SetCameraHeight(targetHeight);
-        }
-
-        private IEnumerator CrawlPhase()
-        {
-            float elapsed = 0f;
-            float duration = _activeCoverSpot.CrawlDuration;
-            
-            Vector3 startPos = transform.position;
-            Vector3 targetPos = _activeCoverSpot.HideAnchor.position;
-            
-            // Keep current rotation during crawl (don't change where player is looking)
-            Quaternion maintainedRotation = transform.rotation;
-
-            while (elapsed < duration)
-            {
-                elapsed += Time.deltaTime;
-                float t = _activeCoverSpot.EntryEasing.Evaluate(elapsed / duration);
-                
-                transform.position = Vector3.Lerp(startPos, targetPos, t);
-                transform.rotation = maintainedRotation; // Maintain look direction
-                
-                yield return null;
-            }
-
-            transform.position = targetPos;
-        }
-
-        private IEnumerator TurnPhase()
-        {
-            float elapsed = 0f;
-            float duration = _activeCoverSpot.TurnDuration;
-            
-            Quaternion startRot = transform.rotation;
-            Quaternion targetRot = _activeCoverSpot.HideAnchor.rotation;
-
-            while (elapsed < duration)
-            {
-                elapsed += Time.deltaTime;
-                float t = _activeCoverSpot.EntryEasing.Evaluate(elapsed / duration);
-                
-                transform.rotation = Quaternion.Slerp(startRot, targetRot, t);
-                
-                yield return null;
-            }
-
-            transform.rotation = targetRot;
         }
 
         private IEnumerator ExitCoverRoutine()
@@ -246,61 +153,21 @@ namespace ShakySurvival.Cover
 
             if (characterController != null) characterController.enabled = false;
 
-            Vector3 startPos = transform.position;
-            Vector3 targetPos = _activeCoverSpot.ExitPoint.position;
-            Quaternion startRot = transform.rotation;
-            Quaternion targetRot = _activeCoverSpot.ExitPoint.rotation;
+            // Unified transition to ExitPoint
+            if (debugMode) Debug.Log("[PlayerCoverController] Transitioning to ExitPoint");
+            yield return StartCoroutine(TransitionRoutine(
+                _activeCoverSpot.ExitPoint,
+                _activeCoverSpot.ExitTransitionDuration,
+                _activeCoverSpot.ExitEasing
+            ));
 
-            // crawl out
-            if (debugMode) Debug.Log("[PlayerCoverController] Exit Phase 1: Crawling out");
-            
-            float elapsed = 0f;
-            float crawlDuration = _activeCoverSpot.ExitCrawlDuration;
-
-            while (elapsed < crawlDuration)
-            {
-                elapsed += Time.deltaTime;
-                float t = _activeCoverSpot.ExitEasing.Evaluate(elapsed / crawlDuration);
-                
-                transform.position = Vector3.Lerp(startPos, targetPos, t);
-                transform.rotation = Quaternion.Slerp(startRot, targetRot, t);
-                
-                yield return null;
-            }
-
-            transform.position = targetPos;
-            transform.rotation = targetRot;
-
-            // rise (camera) phase
-            if (debugMode) Debug.Log("[PlayerCoverController] Exit Phase 2: Rising");
-            
-            // Restore collider dimensions before rising
+            // Restore collider dimensions
             if (characterController != null)
             {
                 characterController.height = _savedColliderHeight;
                 characterController.center = _savedColliderCenter;
+                characterController.enabled = true;
             }
-            
-            float startHeight = _activeCoverSpot.HidingCameraHeight;
-            float targetHeight = _savedCameraHeight;
-            
-            elapsed = 0f;
-            float riseDuration = _activeCoverSpot.ExitRiseDuration;
-
-            while (elapsed < riseDuration)
-            {
-                elapsed += Time.deltaTime;
-                float t = _activeCoverSpot.ExitEasing.Evaluate(elapsed / riseDuration);
-                
-                float currentHeight = Mathf.Lerp(startHeight, targetHeight, t);
-                playerMovement?.SetCameraHeight(currentHeight);
-                
-                yield return null;
-            }
-
-            playerMovement?.SetCameraHeight(targetHeight);
-
-            if (characterController != null) characterController.enabled = true;
 
             // Restore camera shake
             if (cameraShaker != null) cameraShaker.ShakeMultiplier = 1f;
@@ -309,11 +176,8 @@ namespace ShakySurvival.Cover
             if (playerStagger != null) playerStagger.IsImmune = false;
 
             // Restore default look limits and sync yaw
-            playerLook?.SetVerticalLimits(80f, 80f); // Default values
-            playerLook?.SetYaw(targetRot.eulerAngles.y);
-            
-            // Release camera height control back to PlayerMovement
-            if (playerMovement != null) playerMovement.IsCameraHeightOverridden = false;
+            playerLook?.SetVerticalLimits(80f, 80f);
+            playerLook?.SetYaw(_activeCoverSpot.ExitPoint.eulerAngles.y);
             
             // Unlock controls
             playerMovement?.UnlockInput();
@@ -323,8 +187,37 @@ namespace ShakySurvival.Cover
             _currentState = CoverState.Idle;
             if (debugMode) Debug.Log("[PlayerCoverController] State -> Idle");
         }
+        
+        // Smoothly transitions the player to the target transform over the specified duration.
+        // Uses AnimationCurve for easing both position and rotation.
+        private IEnumerator TransitionRoutine(Transform target, float duration, AnimationCurve easingCurve)
+        {
+            Vector3 startPos = transform.position;
+            Vector3 targetPos = target.position;
+            Quaternion startRot = transform.rotation;
+            Quaternion targetRot = target.rotation;
 
-        /// Force exit from cover (Just in case we added table destruction and such)
+            float elapsed = 0f;
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                elapsed = Mathf.Min(elapsed, duration);
+                
+                float t = easingCurve.Evaluate(elapsed / duration);
+                
+                transform.position = Vector3.Lerp(startPos, targetPos, t);
+                transform.rotation = Quaternion.Slerp(startRot, targetRot, t);
+                
+                yield return null;
+            }
+
+            // Ensure final position/rotation are exact
+            transform.position = targetPos;
+            transform.rotation = targetRot;
+        }
+
+        /// Force exit from cover (might be useful for other features)
         public void ForceExit()
         {
             if (_transitionCoroutine != null)
@@ -344,8 +237,6 @@ namespace ShakySurvival.Cover
             
             playerLook?.DisableHorizontalClamp();
             playerLook?.SetVerticalLimits(80f, 80f);
-            if (playerMovement != null) playerMovement.IsCameraHeightOverridden = false;
-            playerMovement?.SetCameraHeight(_savedCameraHeight);
             playerMovement?.UnlockInput();
             playerLook?.UnlockLook();
 

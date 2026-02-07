@@ -22,14 +22,18 @@ namespace ShakySurvival.Player
         [SerializeField] private float runSpeed = 7f;
         [SerializeField] private float crouchSpeed = 2f;
 
-        [Header("Camera Heights")]
-        [SerializeField] private Transform cameraContainer;
-        [SerializeField] private float standingCameraHeight = 1.7f;
-        [SerializeField] private float crouchingCameraHeight = 1.0f;
-        [SerializeField] private float crouchTransitionSpeed = 8f;
-
         [Header("Physics")]
         [SerializeField] private float gravity = -20f;
+
+        [Header("Animation")]
+        [SerializeField] private Animator animator;
+        [SerializeField] private float animBlendSpeed = 8.9f;
+        [Tooltip("Velocity scale for walking animations (matches Blend Tree positions)")]
+        [SerializeField] private float walkAnimScale = 2f;
+        [Tooltip("Velocity scale for running animations (matches Blend Tree positions)")]
+        [SerializeField] private float runAnimScale = 6f;
+        [Tooltip("Velocity scale for crouching animations (matches Blend Tree positions)")]
+        [SerializeField] private float crouchAnimScale = 1.5f;
 
         public MoveState CurrentMoveState { get; private set; } = MoveState.Idle;
         public bool IsInputLocked { get; private set; }
@@ -38,11 +42,8 @@ namespace ShakySurvival.Player
         public float SpeedMultiplier { get; private set; } = 1f;
         public Vector3 ExternalDrift { get; private set; } = Vector3.zero;
         
-        public bool IsCameraHeightOverridden { get; set; }
-
         private CharacterController _controller;
         private Vector3 _velocity;
-        private float _targetCameraHeight;
         private bool _isGrounded;
 
         private InputActionMap _playerActionMap;
@@ -54,23 +55,32 @@ namespace ShakySurvival.Player
         private bool _sprintPressed;
         private bool _crouchPressed;
 
+        // Animation
+        private int _xVelHash;
+        private int _yVelHash;
+        private int _crouchHash;
+        private Vector2 _animationVelocity;
+        private bool _hasAnimator;
+
         private void Awake()
         {
             _controller = GetComponent<CharacterController>();
 
-            if (cameraContainer == null)
+            // Initialize animator
+            if (animator == null)
             {
-                if (transform.childCount > 0)
-                {
-                    cameraContainer = transform.GetChild(0);
-                }
-                else
-                {
-                    Debug.LogWarning("[PlayerMovement] No camera container assigned!");
-                }
+                _hasAnimator = TryGetComponent(out animator);
+            }
+            else
+            {
+                _hasAnimator = true;
             }
 
-            _targetCameraHeight = standingCameraHeight;
+            // Hash animator parameters for performance
+            _xVelHash = Animator.StringToHash("X_Velocity");
+            _yVelHash = Animator.StringToHash("Y_Velocity");
+            _crouchHash = Animator.StringToHash("Crouch");
+
             SetupInputActions();
         }
 
@@ -81,7 +91,7 @@ namespace ShakySurvival.Player
         {
             CheckGrounded();
             HandleMovement();
-            UpdateCameraHeight();
+            UpdateAnimator();
         }
 
         private void SetupInputActions()
@@ -174,36 +184,6 @@ namespace ShakySurvival.Player
 
         public void SetExternalDrift(Vector3 drift) { ExternalDrift = drift; }
 
-        public void ApplyCameraHeightOffset(float heightOffset)
-        {
-            if (cameraContainer != null)
-            {
-                Vector3 pos = cameraContainer.localPosition;
-                pos.y -= heightOffset;
-                cameraContainer.localPosition = pos;
-            }
-        }
-
-        public void SetCameraHeight(float yPosition)
-        {
-            if (cameraContainer != null)
-            {
-                Vector3 pos = cameraContainer.localPosition;
-                pos.y = yPosition;
-                cameraContainer.localPosition = pos;
-            }
-        }
-
-        public float GetCurrentCameraHeight()
-        {
-            return cameraContainer != null ? cameraContainer.localPosition.y : standingCameraHeight;
-        }
-
-        public float GetTargetCameraHeight()
-        {
-            return IsCrouching ? crouchingCameraHeight : standingCameraHeight;
-        }
-
         private void CheckGrounded()
         {
             _isGrounded = _controller.isGrounded;
@@ -274,20 +254,31 @@ namespace ShakySurvival.Player
             }
         }
 
-        private void UpdateCameraHeight()
+        private void UpdateAnimator()
         {
-            if (cameraContainer == null) return;
-            
-            if (IsCameraHeightOverridden)
+            if (!_hasAnimator) return;
+
+            // Calculate target animation velocity based on movement state
+            // Scale values match Blend Tree positions
+            float animScale = CurrentMoveState switch
             {
-                return;
-            }
+                MoveState.Running => runAnimScale,
+                MoveState.Walking => walkAnimScale,
+                MoveState.Crouching => crouchAnimScale,
+                _ => 0f // Idle
+            };
 
-            _targetCameraHeight = IsCrouching ? crouchingCameraHeight : standingCameraHeight;
+            // Target velocity: raw input scaled to match Blend Tree positions
+            Vector2 targetVelocity = IsInputLocked ? Vector2.zero : _moveInput * animScale;
 
-            Vector3 pos = cameraContainer.localPosition;
-            pos.y = Mathf.Lerp(pos.y, _targetCameraHeight, crouchTransitionSpeed * Time.deltaTime);
-            cameraContainer.localPosition = pos;
+            // Smoothly interpolate animation velocity towards target
+            _animationVelocity.x = Mathf.Lerp(_animationVelocity.x, targetVelocity.x, animBlendSpeed * Time.deltaTime);
+            _animationVelocity.y = Mathf.Lerp(_animationVelocity.y, targetVelocity.y, animBlendSpeed * Time.deltaTime);
+
+            // Set animator parameters
+            animator.SetFloat(_xVelHash, _animationVelocity.x);
+            animator.SetFloat(_yVelHash, _animationVelocity.y);
+            animator.SetBool(_crouchHash, IsCrouching);
         }
     }
 }

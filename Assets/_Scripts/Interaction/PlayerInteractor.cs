@@ -4,7 +4,10 @@ using ShakySurvival.Cover;
 
 namespace ShakySurvival.Interactions
 {
+    /// <summary>
     /// Handles player input for interactions and delegates execution to the detector's target.
+    /// Updated to use Unity's New Input System.
+    /// </summary>
     [RequireComponent(typeof(InteractionDetector))]
     public class PlayerInteractor : MonoBehaviour
     {
@@ -93,7 +96,7 @@ namespace ShakySurvival.Interactions
             }
         }
         
-        // Method to get current prompt for UI
+        // Optional: Method to get current prompt for UI
         public string GetCurrentInteractionPrompt()
         {
             // Show exit prompt if in cover

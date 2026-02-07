@@ -11,26 +11,14 @@ namespace ShakySurvival.Cover
         [Tooltip("Where the player exits to after leaving cover.")]
         [SerializeField] private Transform exitPoint;
         
-        [Header("Timing")]
-        [Tooltip("Duration of the lowering/crouch phase.")]
-        [SerializeField] private float lowerDuration = 0.3f;
+        [Header("Transition Timing")]
+        [Tooltip("Duration of the entry transition (from current position to HideAnchor).")]
+        [SerializeField] private float entryTransitionDuration = 0.8f;
         
-        [Tooltip("Duration of the crawling phase.")]
-        [SerializeField] private float crawlDuration = 0.6f;
-        
-        [Tooltip("Duration of the turn-around phase.")]
-        [SerializeField] private float turnDuration = 0.4f;
-        
-        [Tooltip("Duration of crawling out during exit (while camera stays low).")]
-        [SerializeField] private float exitCrawlDuration = 0.5f;
-        
-        [Tooltip("Duration of rising up after crawling out.")]
-        [SerializeField] private float exitRiseDuration = 0.3f;
+        [Tooltip("Duration of the exit transition (from HideAnchor to ExitPoint).")]
+        [SerializeField] private float exitTransitionDuration = 0.6f;
 
         [Header("Camera Settings")]
-        [Tooltip("Camera height while hiding (local Y offset from player).")]
-        [SerializeField] private float hidingCameraHeight = 0.5f;
-        
         [Tooltip("Maximum horizontal look angle while hidden (degrees from center).")]
         [SerializeField] private float maxLookYaw = 45f;
         
@@ -55,10 +43,10 @@ namespace ShakySurvival.Cover
         [SerializeField, Range(0f, 1f)] private float shakeMultiplier = 0.25f;
         
         [Header("Transition Easing")]
-        [Tooltip("Easing curve for entry transitions (Lower, Crawl, Turn).")]
+        [Tooltip("Easing curve for entry transition (position and rotation).")]
         [SerializeField] private AnimationCurve entryEasing = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
         
-        [Tooltip("Easing curve for exit transition.")]
+        [Tooltip("Easing curve for exit transition (position and rotation).")]
         [SerializeField] private AnimationCurve exitEasing = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
         
         [Header("Validation")]
@@ -68,12 +56,8 @@ namespace ShakySurvival.Cover
         // Public accessors
         public Transform HideAnchor => hideAnchor;
         public Transform ExitPoint => exitPoint;
-        public float LowerDuration => lowerDuration;
-        public float CrawlDuration => crawlDuration;
-        public float TurnDuration => turnDuration;
-        public float ExitCrawlDuration => exitCrawlDuration;
-        public float ExitRiseDuration => exitRiseDuration;
-        public float HidingCameraHeight => hidingCameraHeight;
+        public float EntryTransitionDuration => entryTransitionDuration;
+        public float ExitTransitionDuration => exitTransitionDuration;
         public float MaxLookYaw => maxLookYaw;
         public float MaxLookUp => maxLookUp;
         public float MaxLookDown => maxLookDown;
@@ -85,14 +69,11 @@ namespace ShakySurvival.Cover
         public AnimationCurve ExitEasing => exitEasing;
         public float MaxApproachAngle => maxApproachAngle;
 
-        /// <summary>
-        /// The yaw angle the player should face while hidden (facing outward from cover).
-        /// </summary>
+
+        // The yaw angle the player should face while hidden (facing outward from cover).
         public float HiddenFacingYaw => hideAnchor != null ? hideAnchor.eulerAngles.y : 0f;
 
-        /// <summary>
-        /// Checks if the given interactor is within the valid approach angle.
-        /// </summary>
+        // Checks if the given interactor is within the valid approach angle.
         public bool IsValidApproach(Transform interactor)
         {
             if (hideAnchor == null) return true;
@@ -115,11 +96,6 @@ namespace ShakySurvival.Cover
                 Gizmos.color = Color.cyan;
                 Gizmos.DrawWireSphere(hideAnchor.position, 0.2f);
                 Gizmos.DrawRay(hideAnchor.position, hideAnchor.forward * 0.5f);
-                
-                // Draw camera height indicator
-                Gizmos.color = Color.magenta;
-                Vector3 camPos = hideAnchor.position + Vector3.up * hidingCameraHeight;
-                Gizmos.DrawWireSphere(camPos, 0.1f);
             }
             
             // Draw exit point

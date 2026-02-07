@@ -10,8 +10,8 @@ namespace ShakySurvival.Player
         private InputActionAsset inputActions;
 
         [Header("Camera Reference")]
-        [SerializeField, Tooltip("The camera container to rotate vertically (pitch)")]
-        private Transform cameraContainer;
+        [SerializeField, Tooltip("CameraRoot transform - for applying pitch rotation")]
+        private Transform cameraRoot;
 
         [Header("Sensitivity")]
         [SerializeField, Tooltip("Mouse sensitivity for horizontal look")]
@@ -48,17 +48,9 @@ namespace ShakySurvival.Player
 
         private void Awake()
         {
-            // Find camera container if not assigned
-            if (cameraContainer == null)
+            if (cameraRoot == null)
             {
-                if (transform.childCount > 0)
-                {
-                    cameraContainer = transform.GetChild(0);
-                }
-                else
-                {
-                    Debug.LogWarning("No camera container assigned!");
-                }
+                Debug.LogWarning("[PlayerLook] CameraRoot not assigned!");
             }
 
             SetupInputActions();
@@ -183,7 +175,7 @@ namespace ShakySurvival.Player
 
         private void HandleLook()
         {
-            if (IsLookLocked || cameraContainer == null) return;
+            if (IsLookLocked || cameraRoot == null) return;
 
             // Only process input when cursor is locked
             if (Cursor.lockState != CursorLockMode.Locked) return;
@@ -191,7 +183,7 @@ namespace ShakySurvival.Player
             float mouseX = _lookInput.x * sensitivityX;
             float mouseY = _lookInput.y * sensitivityY;
 
-            // Horizontal rotation
+            // Horizontal rotation - rotate player body
             _yRotation += mouseX;
             
             // Apply horizontal clamping if enabled
@@ -204,11 +196,11 @@ namespace ShakySurvival.Player
             
             transform.rotation = Quaternion.Euler(0f, _yRotation, 0f);
 
-            // Vertical rotation - rotate the camera container
+            // Vertical rotation - rotate the CameraRoot (Cinemachine follows it)
             _xRotation -= mouseY;
             _xRotation = Mathf.Clamp(_xRotation, -maxLookUp, maxLookDown);
 
-            cameraContainer.localRotation = Quaternion.Euler(_xRotation, 0f, 0f);
+            cameraRoot.localRotation = Quaternion.Euler(_xRotation, 0f, 0f);
         }
 
         // Enables horizontal look clamping around the current facing direction.
