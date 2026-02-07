@@ -1,66 +1,189 @@
 using UnityEngine;
-using System.Collections;
+using UnityEngine.InputSystem;
 
-public class EarthquakeController : MonoBehaviour
+namespace ShakySurvival.Earthquake
 {
-    public static EarthquakeController Instance { get; private set; }
-
-    [Header("Fade Settings")]
-    [SerializeField] private float fadeInTime = 2f;
-    [SerializeField] private float fadeOutTime = 2.5f;
-
-    public float Intensity { get; private set; } = 0f;
-    public bool IsQuaking { get; private set; } = false;
-    public EnvironmentShake ActiveEnvironment { get; private set; }
-
-    private Coroutine quakeRoutine;
-
-    private void Awake()
+    public class EarthquakeManager : MonoBehaviour
     {
-        Instance = this;
-    }
-
-    public void StartQuake(float targetIntensity)
-    {
-        if (quakeRoutine != null)
-            StopCoroutine(quakeRoutine);
-
-        quakeRoutine = StartCoroutine(FadeToIntensity(targetIntensity, fadeInTime));
-    }
-
-    public void StopQuake()
-    {
-        if (quakeRoutine != null)
-            StopCoroutine(quakeRoutine);
-
-        quakeRoutine = StartCoroutine(FadeToIntensity(0f, fadeOutTime, stopAtEnd: true));
-    }
-
-    private IEnumerator FadeToIntensity(float target, float duration, bool stopAtEnd = false)
-    {
-        IsQuaking = true;
-
-        float start = Intensity;
-        float t = 0f;
-
-        while (t < duration)
+        // SINGLETON
+        private static EarthquakeManager _instance;
+        
+        public static EarthquakeManager Instance
         {
-            t += Time.deltaTime;
-            float lerp = Mathf.Clamp01(t / duration);
-            Intensity = Mathf.Lerp(start, target, lerp);
-            yield return null;
+            get
+            {
+                if (_instance == null)
+                {
+                    _instance = FindFirstObjectByType<EarthquakeManager>();
+                    if (_instance == null)
+                    {
+                        Debug.LogWarning("[EarthquakeManager] No instance found in scene!");
+                    }
+                }
+                return _instance;
+            }
         }
 
-        Intensity = target;
+        [Header("Earthquake Settings")]
+        [SerializeField] private float earthquakeDuration = 30f;
+        [SerializeField] private AnimationCurve intensityCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+        [SerializeField] private float maxIntensity = 1f;
 
-        if (stopAtEnd && target == 0f)
-            IsQuaking = false;
+        [Header("Testing (Input System)")]
+        [SerializeField] private InputActionReference testTriggerAction;
+        [SerializeField] private bool autoStartOnAwake = false;
 
-        quakeRoutine = null;
-    }
+        public float CurrentIntensity { get; private set; }
+        public bool IsActive { get; private set; }
+        public float NormalizedTime { get; private set; }
 
-    public void SetActiveEnvironment(EnvironmentShake env)
-    {
-        ActiveEnvironment = env;
+        private float _elapsedTime;
+        private float _previousIntensity;
+        private InputAction _keyboardTAction; // Input action for testing (T key), defo replaceable
+
+        private void Awake()
+        {
+            // Singleton enforcement
+            if (_instance != null && _instance != this)
+            {
+                Debug.LogWarning("[EarthquakeManager] Duplicate instance destroyed.");
+                Destroy(gameObject);
+                return;
+            }
+
+            _instance = this;
+
+            // Setup default keyboard input if no action reference assigned
+            if (testTriggerAction == null)
+            {
+                _keyboardTAction = new InputAction("TestTrigger", InputActionType.Button, "<Keyboard>/t");
+                _keyboardTAction.Enable();
+            }
+
+            if (autoStartOnAwake)
+            {
+                StartEarthquake();
+            }
+        }
+
+        private void OnEnable()
+        {
+            if (testTriggerAction != null)
+            {
+                testTriggerAction.action.Enable();
+                testTriggerAction.action.performed += OnTestTrigger;
+            }
+        }
+
+        private void OnDisable()
+        {
+            if (testTriggerAction != null)
+            {
+                testTriggerAction.action.performed -= OnTestTrigger;
+                testTriggerAction.action.Disable();
+            }
+        }
+
+        private void Update()
+        {
+            // Check fallback T key
+            if (_keyboardTAction != null && _keyboardTAction.WasPressedThisFrame())
+            {
+                ToggleEarthquake();
+            }
+
+            // Update earthquake simulation
+            if (IsActive)
+            {
+                UpdateEarthquake();
+            }
+        }
+
+        private void OnDestroy()
+        {
+            if (_instance == this)
+            {
+                _instance = null;
+            }
+
+            _keyboardTAction?.Dispose();
+        }
+
+        private void OnTestTrigger(InputAction.CallbackContext context)
+        {
+            ToggleEarthquake();
+        }
+
+        private void ToggleEarthquake()
+        {
+            if (IsActive)
+            {
+                StopEarthquake();
+            }
+            else
+            {
+                StartEarthquake();
+            }
+        }
+
+        public void StartEarthquake()
+        {
+            StartEarthquake(earthquakeDuration);
+        }
+
+        public void StartEarthquake(float duration)
+        {
+            earthquakeDuration = duration;
+            _elapsedTime = 0f;
+            NormalizedTime = 0f;
+            CurrentIntensity = 0f;
+            _previousIntensity = 0f;
+            IsActive = true;
+
+            Debug.Log($"[EarthquakeManager] Earthquake started! Duration: {duration}s");
+            EarthquakeEvents.RaiseEarthquakeStart();
+        }
+
+        public void StopEarthquake()
+        {
+            if (!IsActive) return;
+
+            IsActive = false;
+            CurrentIntensity = 0f;
+            NormalizedTime = 0f;
+
+            Debug.Log("[EarthquakeManager] Earthquake stopped.");
+            EarthquakeEvents.RaiseIntensityChange(0f);
+            EarthquakeEvents.RaiseEarthquakeStop();
+        }
+
+        public void SetIntensityOverride(float intensity)
+        {
+            CurrentIntensity = Mathf.Clamp01(intensity);
+            EarthquakeEvents.RaiseIntensityChange(CurrentIntensity);
+        }
+
+        private void UpdateEarthquake()
+        {
+            _elapsedTime += Time.deltaTime;
+            NormalizedTime = Mathf.Clamp01(_elapsedTime / earthquakeDuration);
+
+            // Evaluate intensity from curve
+            float curveValue = intensityCurve.Evaluate(NormalizedTime);
+            CurrentIntensity = curveValue * maxIntensity;
+
+            // Only dispatch event if intensity changed significantly
+            if (!Mathf.Approximately(CurrentIntensity, _previousIntensity))
+            {
+                EarthquakeEvents.RaiseIntensityChange(CurrentIntensity);
+                _previousIntensity = CurrentIntensity;
+            }
+
+            // Check for completion
+            if (_elapsedTime >= earthquakeDuration)
+            {
+                StopEarthquake();
+            }
+        }
     }
 }
