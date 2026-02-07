@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 76b2e095533b9934d90b87415ba9807d
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 75007
+  packageName: Classroom
+  packageVersion: 2.0
+  assetPath: Assets/Classroom/Prefabs/LightFitting.prefab
+  uploadId: 831844

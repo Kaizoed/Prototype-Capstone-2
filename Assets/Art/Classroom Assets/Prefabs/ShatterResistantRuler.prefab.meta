@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: cad3f1e40f4147546be9ad746b46a719
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 75007
+  packageName: Classroom
+  packageVersion: 2.0
+  assetPath: Assets/Classroom/Prefabs/ShatterResistantRuler.prefab
+  uploadId: 831844

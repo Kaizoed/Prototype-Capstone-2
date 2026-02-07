@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 976dd1fd8cbd1464ca1f241bb6fbeef5
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 75007
+  packageName: Classroom
+  packageVersion: 2.0
+  assetPath: Assets/Classroom/Materials/GlassMat.mat
+  uploadId: 831844

@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: a57026d1c904195458d8583958ce39ad
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 75007
+  packageName: Classroom
+  packageVersion: 2.0
+  assetPath: Assets/Classroom/Materials/Locker01Mat.mat
+  uploadId: 831844
