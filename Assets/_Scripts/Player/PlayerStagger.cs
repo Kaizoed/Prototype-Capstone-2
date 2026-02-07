@@ -27,8 +27,7 @@ namespace ShakySurvival.Player
         [SerializeField] private float driftStrength = 1.5f;
         [SerializeField] private float driftRampSpeed = 3f;
 
-        // Impulse is optional, it helps enhance the stagger effect
-        [Header("Cinemachine Impulse")]
+        [Header("Cinemachine Impulse (Optional)")]
         [SerializeField] private CinemachineImpulseSource impulseSource;
         [SerializeField] private float impulseForce = 0.5f;
 
@@ -44,6 +43,11 @@ namespace ShakySurvival.Player
 
         public bool IsStaggering => _isStaggering;
         public float CurrentChance { get; private set; }
+        
+        /// <summary>
+        /// When true, stagger checks are skipped (e.g., while hiding under cover).
+        /// </summary>
+        public bool IsImmune { get; set; }
 
         private void Awake()
         {
@@ -76,6 +80,13 @@ namespace ShakySurvival.Player
             }
 
             if (_movement.IsCrouching)
+            {
+                CurrentChance = 0f;
+                return;
+            }
+
+            // Skip if immune (e.g., hiding under cover)
+            if (IsImmune)
             {
                 CurrentChance = 0f;
                 return;
