@@ -67,9 +67,5 @@
         "*.sln": "*.csproj",
         "*.slnx": "*.csproj"
     },
-<<<<<<< HEAD
     "dotnet.defaultSolution": "Capstone.slnx"
-=======
-    "dotnet.defaultSolution": "Prototype-Capstone-2.slnx"
->>>>>>> 042e5bb3168454aef1de3f8d88af3ad4239ac505
 }

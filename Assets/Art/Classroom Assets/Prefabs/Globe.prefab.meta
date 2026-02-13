@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 fileFormatVersion: 2
 guid: 4488f9b065fee8d4da958e55e1fd50e7
 PrefabImporter:
@@ -13,19 +12,3 @@ AssetOrigin:
   packageVersion: 2.0
   assetPath: Assets/Classroom/Prefabs/Globe.prefab
   uploadId: 831844
-=======
-fileFormatVersion: 2
-guid: 4488f9b065fee8d4da958e55e1fd50e7
-PrefabImporter:
-  externalObjects: {}
-  userData: 
-  assetBundleName: 
-  assetBundleVariant: 
-AssetOrigin:
-  serializedVersion: 1
-  productId: 75007
-  packageName: Classroom
-  packageVersion: 2.0
-  assetPath: Assets/Classroom/Prefabs/Globe.prefab
-  uploadId: 831844
->>>>>>> 042e5bb3168454aef1de3f8d88af3ad4239ac505

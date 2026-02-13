@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 fileFormatVersion: 2
 guid: 60069bb77a6a36b4ca586aa64dea9082
 DefaultImporter:
@@ -13,19 +12,3 @@ AssetOrigin:
   packageVersion: 2.0
   assetPath: Assets/Classroom/DemoScene/ClassRoomStandard.unity
   uploadId: 831844
-=======
-fileFormatVersion: 2
-guid: 60069bb77a6a36b4ca586aa64dea9082
-DefaultImporter:
-  externalObjects: {}
-  userData: 
-  assetBundleName: 
-  assetBundleVariant: 
-AssetOrigin:
-  serializedVersion: 1
-  productId: 75007
-  packageName: Classroom
-  packageVersion: 2.0
-  assetPath: Assets/Classroom/DemoScene/ClassRoomStandard.unity
-  uploadId: 831844
->>>>>>> 042e5bb3168454aef1de3f8d88af3ad4239ac505
