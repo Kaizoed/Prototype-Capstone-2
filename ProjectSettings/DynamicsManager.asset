@@ -37,9 +37,5 @@ PhysicsManager:
   m_SolverType: 0
   m_DefaultMaxAngularSpeed: 50
   m_ScratchBufferChunkCount: 4
-<<<<<<< HEAD
   m_CurrentBackendId: 4072204805
-=======
-  m_CurrentBackendId: 0
->>>>>>> 042e5bb3168454aef1de3f8d88af3ad4239ac505
   m_FastMotionThreshold: 3.4028235e+38

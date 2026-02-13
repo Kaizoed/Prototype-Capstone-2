@@ -7,11 +7,8 @@
     "com.unity.ide.visualstudio": "2.0.25",
     "com.unity.inputsystem": "1.14.2",
     "com.unity.multiplayer.center": "1.0.0",
-<<<<<<< HEAD
     "com.unity.postprocessing": "3.5.1",
     "com.unity.probuilder": "6.0.8",
-=======
->>>>>>> 042e5bb3168454aef1de3f8d88af3ad4239ac505
     "com.unity.render-pipelines.universal": "17.0.4",
     "com.unity.test-framework": "1.6.0",
     "com.unity.timeline": "1.8.9",

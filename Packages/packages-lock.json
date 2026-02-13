@@ -94,7 +94,6 @@
       "dependencies": {},
       "url": "https://packages.unity.com"
     },
-<<<<<<< HEAD
     "com.unity.postprocessing": {
       "version": "3.5.1",
       "depth": 0,
@@ -116,8 +115,6 @@
       },
       "url": "https://packages.unity.com"
     },
-=======
->>>>>>> 042e5bb3168454aef1de3f8d88af3ad4239ac505
     "com.unity.render-pipelines.core": {
       "version": "17.0.4",
       "depth": 1,
@@ -168,7 +165,6 @@
       "dependencies": {},
       "url": "https://packages.unity.com"
     },
-<<<<<<< HEAD
     "com.unity.settings-manager": {
       "version": "2.1.0",
       "depth": 1,
@@ -176,8 +172,6 @@
       "dependencies": {},
       "url": "https://packages.unity.com"
     },
-=======
->>>>>>> 042e5bb3168454aef1de3f8d88af3ad4239ac505
     "com.unity.shadergraph": {
       "version": "17.0.4",
       "depth": 1,
