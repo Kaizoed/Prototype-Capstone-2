@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 70f66a142f65c8541a0d526865f7dc9b
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 75007
+  packageName: Classroom
+  packageVersion: 2.0
+  assetPath: Assets/Classroom/Materials/GlobeMat.mat
+  uploadId: 831844

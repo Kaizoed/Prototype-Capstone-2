@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 9b95267a2ecfa5f4cbea35dda2eccc89
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 75007
+  packageName: Classroom
+  packageVersion: 2.0
+  assetPath: Assets/Classroom/Prefabs/PlasticChair.prefab
+  uploadId: 831844

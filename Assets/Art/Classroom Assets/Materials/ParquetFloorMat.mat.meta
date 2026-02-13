@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 875c4f4a0b18c2a41ac82aaaf91037ff
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 75007
+  packageName: Classroom
+  packageVersion: 2.0
+  assetPath: Assets/Classroom/Materials/ParquetFloorMat.mat
+  uploadId: 831844

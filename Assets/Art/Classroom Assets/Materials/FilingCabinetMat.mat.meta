@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 87f6262da23d61048b441485a00359ce
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 75007
+  packageName: Classroom
+  packageVersion: 2.0
+  assetPath: Assets/Classroom/Materials/FilingCabinetMat.mat
+  uploadId: 831844
