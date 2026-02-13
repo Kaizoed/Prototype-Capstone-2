@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 fileFormatVersion: 2
 guid: 5f89d5d5a9528bf42a05ab54750fa88e
 NativeFormatImporter:
@@ -13,3 +14,20 @@ AssetOrigin:
   packageVersion: 2.0
   assetPath: Assets/Classroom/Materials/ConcreteMat.mat
   uploadId: 831844
+=======
+fileFormatVersion: 2
+guid: 5f89d5d5a9528bf42a05ab54750fa88e
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 75007
+  packageName: Classroom
+  packageVersion: 2.0
+  assetPath: Assets/Classroom/Materials/ConcreteMat.mat
+  uploadId: 831844
+>>>>>>> 042e5bb3168454aef1de3f8d88af3ad4239ac505

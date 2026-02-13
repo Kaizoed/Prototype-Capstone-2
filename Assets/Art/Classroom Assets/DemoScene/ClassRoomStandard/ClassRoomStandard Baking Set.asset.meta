@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 fileFormatVersion: 2
 guid: 07e889500710aa84589a5eee51b90370
 NativeFormatImporter:
@@ -14,3 +15,21 @@ AssetOrigin:
   assetPath: Assets/Classroom/DemoScene/ClassRoomStandard/ClassRoomStandard Baking
     Set.asset
   uploadId: 831844
+=======
+fileFormatVersion: 2
+guid: 07e889500710aa84589a5eee51b90370
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 75007
+  packageName: Classroom
+  packageVersion: 2.0
+  assetPath: Assets/Classroom/DemoScene/ClassRoomStandard/ClassRoomStandard Baking
+    Set.asset
+  uploadId: 831844
+>>>>>>> 042e5bb3168454aef1de3f8d88af3ad4239ac505

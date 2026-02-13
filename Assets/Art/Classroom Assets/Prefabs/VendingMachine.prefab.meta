@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 fileFormatVersion: 2
 guid: 91d473368f1913d4988ac644b7111d1b
 PrefabImporter:
@@ -12,3 +13,19 @@ AssetOrigin:
   packageVersion: 2.0
   assetPath: Assets/Classroom/Prefabs/VendingMachine.prefab
   uploadId: 831844
+=======
+fileFormatVersion: 2
+guid: 91d473368f1913d4988ac644b7111d1b
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 75007
+  packageName: Classroom
+  packageVersion: 2.0
+  assetPath: Assets/Classroom/Prefabs/VendingMachine.prefab
+  uploadId: 831844
+>>>>>>> 042e5bb3168454aef1de3f8d88af3ad4239ac505
