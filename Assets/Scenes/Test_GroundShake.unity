@@ -967,12 +967,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 1306207875}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cf681f35d68aafa45b563a50df72ff58, type: 3}
+  m_Script: {fileID: 11500000, guid: f4a87c4382d9f7b4c9613ca97d6e0955, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  totalDuration: 8
-  fadeInTime: 2
-  fadeOutTime: 2.5
+  magnitude: 5
+  earthquakeDuration: 30
   intensityCurve:
     serializedVersion: 2
     m_Curve:
@@ -997,6 +996,15 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  preset: {fileID: 0}
+  forceOverrideCurve:
+    serializedVersion: 2
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  testTriggerAction: {fileID: 0}
+  autoStartOnAwake: 0
 --- !u!1 &1391971392
 GameObject:
   m_ObjectHideFlags: 0
