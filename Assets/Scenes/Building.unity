@@ -16055,6 +16055,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fadeInTime: 0
   fadeOutTime: 1
+  <Intensity>k__BackingField: 0
+  <IsQuaking>k__BackingField: 0
+  <ActiveEnvironment>k__BackingField: {fileID: 0}
 --- !u!4 &173199676
 Transform:
   m_ObjectHideFlags: 0
@@ -64086,6 +64089,9 @@ MonoBehaviour:
   frequency: 12
   verticalMultiplier: 0.2
   horizontalMultiplier: 1
+  originalLocalPos: {x: 0, y: 0, z: 0}
+  positionOffset: {x: 0, y: 0, z: 0}
+  shakeRotationOffset: {x: 0, y: 0, z: 0, w: 1}
 --- !u!1001 &587902580
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -116803,6 +116809,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9dec49e78a494b445bfa8321a5a6e43b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rb: {fileID: 0}
+  ground: {fileID: 0}
+  lastGroundPos: {x: 0, y: 0, z: 0}
+  initialized: 0
   inspectorGroundOverride: {fileID: 0}
   weightMultiplier: 1
 --- !u!54 &1078382307
@@ -117737,6 +117747,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9dec49e78a494b445bfa8321a5a6e43b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rb: {fileID: 0}
+  ground: {fileID: 0}
+  lastGroundPos: {x: 0, y: 0, z: 0}
+  initialized: 0
   inspectorGroundOverride: {fileID: 0}
   weightMultiplier: 1
 --- !u!54 &1097316311
@@ -123853,6 +123867,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9dec49e78a494b445bfa8321a5a6e43b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rb: {fileID: 0}
+  ground: {fileID: 0}
+  lastGroundPos: {x: 0, y: 0, z: 0}
+  initialized: 0
   inspectorGroundOverride: {fileID: 0}
   weightMultiplier: 1
 --- !u!54 &1142725891
@@ -125551,6 +125569,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9dec49e78a494b445bfa8321a5a6e43b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rb: {fileID: 0}
+  ground: {fileID: 0}
+  lastGroundPos: {x: 0, y: 0, z: 0}
+  initialized: 0
   inspectorGroundOverride: {fileID: 0}
   weightMultiplier: 1
 --- !u!54 &1161418541
@@ -136022,6 +136044,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9dec49e78a494b445bfa8321a5a6e43b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rb: {fileID: 0}
+  ground: {fileID: 0}
+  lastGroundPos: {x: 0, y: 0, z: 0}
+  initialized: 0
   inspectorGroundOverride: {fileID: 0}
   weightMultiplier: 1
 --- !u!54 &1304555976
@@ -140547,6 +140573,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9dec49e78a494b445bfa8321a5a6e43b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rb: {fileID: 0}
+  ground: {fileID: 0}
+  lastGroundPos: {x: 0, y: 0, z: 0}
+  initialized: 0
   inspectorGroundOverride: {fileID: 0}
   weightMultiplier: 1
 --- !u!54 &1352364497
@@ -151674,6 +151704,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9dec49e78a494b445bfa8321a5a6e43b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rb: {fileID: 0}
+  ground: {fileID: 0}
+  lastGroundPos: {x: 0, y: 0, z: 0}
+  initialized: 0
   inspectorGroundOverride: {fileID: 0}
   weightMultiplier: 1
 --- !u!54 &1428559877
@@ -155267,6 +155301,46 @@ MonoBehaviour:
   rotation: Rotation
   crouch: Crouch
   sprint: Sprint
+  movementAction:
+    m_Name: 
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: db41493b-3410-478a-8875-2d98ec28eb55
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings: []
+    m_Flags: 0
+  rotationAction:
+    m_Name: 
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: 0993d464-67dc-4b3c-b961-d25f85c9c696
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings: []
+    m_Flags: 0
+  crouchAction:
+    m_Name: 
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: 080b1d94-7bec-4c5f-8ecc-670a5159d7d9
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings: []
+    m_Flags: 0
+  sprintAction:
+    m_Name: 
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: 692d67c4-4882-4ca7-b4de-71cf983f22c5
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings: []
+    m_Flags: 0
+  <MovementInput>k__BackingField: {x: 0, y: 0}
+  <rotationInput>k__BackingField: {x: 0, y: 0}
+  <crouchTriggered>k__BackingField: 0
+  <sprintTriggered>k__BackingField: 0
 --- !u!4 &1451469288
 Transform:
   m_ObjectHideFlags: 0
@@ -156319,6 +156393,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9dec49e78a494b445bfa8321a5a6e43b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rb: {fileID: 0}
+  ground: {fileID: 0}
+  lastGroundPos: {x: 0, y: 0, z: 0}
+  initialized: 0
   inspectorGroundOverride: {fileID: 0}
   weightMultiplier: 1
 --- !u!54 &1465117698
@@ -156925,6 +157003,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9dec49e78a494b445bfa8321a5a6e43b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rb: {fileID: 0}
+  ground: {fileID: 0}
+  lastGroundPos: {x: 0, y: 0, z: 0}
+  initialized: 0
   inspectorGroundOverride: {fileID: 0}
   weightMultiplier: 1
 --- !u!54 &1481486274
@@ -157385,6 +157467,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxMagnitude: 0.3
   frequency: 7
+  originalPos: {x: 0, y: 0, z: 0}
+  rb: {fileID: 0}
 --- !u!65 &1486268824
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -158034,6 +158118,7 @@ MonoBehaviour:
   - 9
   quakeDuration: 15
   interval: 5
+  controller: {fileID: 0}
 --- !u!4 &1497344475
 Transform:
   m_ObjectHideFlags: 0
@@ -167245,6 +167330,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9dec49e78a494b445bfa8321a5a6e43b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rb: {fileID: 0}
+  ground: {fileID: 0}
+  lastGroundPos: {x: 0, y: 0, z: 0}
+  initialized: 0
   inspectorGroundOverride: {fileID: 0}
   weightMultiplier: 1
 --- !u!54 &1521502462
@@ -188063,6 +188152,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9dec49e78a494b445bfa8321a5a6e43b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rb: {fileID: 0}
+  ground: {fileID: 0}
+  lastGroundPos: {x: 0, y: 0, z: 0}
+  initialized: 0
   inspectorGroundOverride: {fileID: 0}
   weightMultiplier: 1
 --- !u!54 &1703193824
@@ -192491,6 +192584,10 @@ MonoBehaviour:
   characterController: {fileID: 1730320165}
   mainCamera: {fileID: 587123904}
   playerInputHandler: {fileID: 1451469287}
+  currentMovement: {x: 0, y: 0, z: 0}
+  verticalRotation: 0
+  defaultCameraHeight: 0
+  isCrouched: 0
 --- !u!1 &1734572704
 GameObject:
   m_ObjectHideFlags: 0
@@ -198859,6 +198956,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9dec49e78a494b445bfa8321a5a6e43b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rb: {fileID: 0}
+  ground: {fileID: 0}
+  lastGroundPos: {x: 0, y: 0, z: 0}
+  initialized: 0
   inspectorGroundOverride: {fileID: 0}
   weightMultiplier: 1
 --- !u!54 &1767738976
@@ -199458,6 +199559,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9dec49e78a494b445bfa8321a5a6e43b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rb: {fileID: 0}
+  ground: {fileID: 0}
+  lastGroundPos: {x: 0, y: 0, z: 0}
+  initialized: 0
   inspectorGroundOverride: {fileID: 0}
   weightMultiplier: 1
 --- !u!54 &1773114438
@@ -201297,6 +201402,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9dec49e78a494b445bfa8321a5a6e43b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rb: {fileID: 0}
+  ground: {fileID: 0}
+  lastGroundPos: {x: 0, y: 0, z: 0}
+  initialized: 0
   inspectorGroundOverride: {fileID: 0}
   weightMultiplier: 1
 --- !u!54 &1790887360
@@ -202478,6 +202587,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9dec49e78a494b445bfa8321a5a6e43b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rb: {fileID: 0}
+  ground: {fileID: 0}
+  lastGroundPos: {x: 0, y: 0, z: 0}
+  initialized: 0
   inspectorGroundOverride: {fileID: 0}
   weightMultiplier: 1
 --- !u!54 &1820175214
@@ -203709,6 +203822,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9dec49e78a494b445bfa8321a5a6e43b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rb: {fileID: 0}
+  ground: {fileID: 0}
+  lastGroundPos: {x: 0, y: 0, z: 0}
+  initialized: 0
   inspectorGroundOverride: {fileID: 0}
   weightMultiplier: 1
 --- !u!54 &1842997255
@@ -204918,6 +205035,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9dec49e78a494b445bfa8321a5a6e43b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rb: {fileID: 0}
+  ground: {fileID: 0}
+  lastGroundPos: {x: 0, y: 0, z: 0}
+  initialized: 0
   inspectorGroundOverride: {fileID: 0}
   weightMultiplier: 1
 --- !u!54 &1867703867
@@ -205422,6 +205543,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9dec49e78a494b445bfa8321a5a6e43b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rb: {fileID: 0}
+  ground: {fileID: 0}
+  lastGroundPos: {x: 0, y: 0, z: 0}
+  initialized: 0
   inspectorGroundOverride: {fileID: 0}
   weightMultiplier: 1
 --- !u!54 &1874985827
@@ -207742,6 +207867,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxMagnitude: 0.5
   frequency: 8
+  originalPos: {x: 0, y: 0, z: 0}
+  rb: {fileID: 0}
 --- !u!54 &1918157973
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -208236,6 +208363,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9dec49e78a494b445bfa8321a5a6e43b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rb: {fileID: 0}
+  ground: {fileID: 0}
+  lastGroundPos: {x: 0, y: 0, z: 0}
+  initialized: 0
   inspectorGroundOverride: {fileID: 0}
   weightMultiplier: 1
 --- !u!54 &1921768450
@@ -216394,6 +216525,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9dec49e78a494b445bfa8321a5a6e43b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rb: {fileID: 0}
+  ground: {fileID: 0}
+  lastGroundPos: {x: 0, y: 0, z: 0}
+  initialized: 0
   inspectorGroundOverride: {fileID: 0}
   weightMultiplier: 1
 --- !u!54 &1998313516
@@ -217189,6 +217324,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9dec49e78a494b445bfa8321a5a6e43b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rb: {fileID: 0}
+  ground: {fileID: 0}
+  lastGroundPos: {x: 0, y: 0, z: 0}
+  initialized: 0
   inspectorGroundOverride: {fileID: 0}
   weightMultiplier: 1
 --- !u!54 &2012927232
@@ -217574,6 +217713,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9dec49e78a494b445bfa8321a5a6e43b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rb: {fileID: 0}
+  ground: {fileID: 0}
+  lastGroundPos: {x: 0, y: 0, z: 0}
+  initialized: 0
   inspectorGroundOverride: {fileID: 0}
   weightMultiplier: 1
 --- !u!54 &2017948699
@@ -220881,6 +221024,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9dec49e78a494b445bfa8321a5a6e43b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rb: {fileID: 0}
+  ground: {fileID: 0}
+  lastGroundPos: {x: 0, y: 0, z: 0}
+  initialized: 0
   inspectorGroundOverride: {fileID: 0}
   weightMultiplier: 1
 --- !u!54 &2060540965
@@ -222494,6 +222641,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9dec49e78a494b445bfa8321a5a6e43b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rb: {fileID: 0}
+  ground: {fileID: 0}
+  lastGroundPos: {x: 0, y: 0, z: 0}
+  initialized: 0
   inspectorGroundOverride: {fileID: 0}
   weightMultiplier: 1
 --- !u!54 &2085106658
@@ -224512,6 +224663,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxMagnitude: 0.5
   frequency: 8
+  originalPos: {x: 0, y: 0, z: 0}
+  rb: {fileID: 0}
 --- !u!54 &2106294611
 Rigidbody:
   m_ObjectHideFlags: 0
