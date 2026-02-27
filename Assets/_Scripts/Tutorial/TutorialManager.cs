@@ -30,7 +30,7 @@ public class TutorialManager : MonoBehaviour
         if (!waitingForKey) return;
 
         // Only allow the keys listed in the current step
-        var keys = steps[stepIndex].advanceKeys;
+       var keys = steps[stepIndex].GetKeys();
         for (int i = 0; i < keys.Length; i++)
         {
             if (Input.GetKeyDown(keys[i]))
