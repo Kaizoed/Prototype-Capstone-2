@@ -4,119 +4,88 @@ using System.Collections;
 
 public class TutorialManager : MonoBehaviour
 {
-    // public static TutorialManager Instance;
+    [Header("UI")]
+    public GameObject tutorialPanel;
+    public TMP_Text tutorialText;
 
-    // [Header("UI")]
-    // [SerializeField] private GameObject tutorialUI;
-    // [SerializeField] private TMP_Text tutorialText;
+    [Header("Steps")]
+    public TutorialStep[] steps;
 
-    // [Header("References")]
-    // [SerializeField] private PlayerController player;
+    private int stepIndex = 0;
+    private bool waitingForKey = false;
 
-    // [Header("Hold Step Settings")]
-    // [SerializeField] private float holdDuration = 3f;
+    void Start()
+    {
+        if (steps == null || steps.Length == 0)
+        {
+            Debug.LogWarning("No tutorial steps set.");
+            return;
+        }
 
-    // public int CurrentStep { get; private set; } = 0;
+        StartStep(0);
+    }
 
-    // private Coroutine holdRoutine;
+    void Update()
+    {
+        if (!waitingForKey) return;
 
-    // private readonly string[] stepMessages =
-    // {
-    //     "Use WASD to move.",
-    //     "Move the mouse to look around.",
-    //     "Press CTRL to crouch.",
-    //     "Go under the desk.",
-    //     "Stay crouched and do not move for 3 seconds."
-    // };
+        // Only allow the keys listed in the current step
+        var keys = steps[stepIndex].advanceKeys;
+        for (int i = 0; i < keys.Length; i++)
+        {
+            if (Input.GetKeyDown(keys[i]))
+            {
+                waitingForKey = false;
+                StartCoroutine(AdvanceRoutine());
+                break;
+            }
+        }
+    }
 
-    // private void Awake()
-    // {
-    //     Instance = this;
-    // }
+    void StartStep(int index)
+    {
+        stepIndex = index;
 
-    // private void Start()
-    // {
-    //     StartTutorial();
-    // }
+        // Freeze gameplay
+        Time.timeScale = 0f;
 
-    // public void StartTutorial()
-    // {
-    //     CurrentStep = 0;
-    //     tutorialUI.SetActive(true);
-    //     UpdateUI();
-    // }
+        // Show UI
+        tutorialPanel.SetActive(true);
+        tutorialText.text = steps[stepIndex].instruction;
 
-    // public void CompleteStep()
-    // {
-    //     // Stop hold routine when leaving/finishing the hold step
-    //     if (holdRoutine != null)
-    //     {
-    //         StopCoroutine(holdRoutine);
-    //         holdRoutine = null;
-    //     }
+        waitingForKey = true;
+    }
 
-    //     CurrentStep++;
+    IEnumerator AdvanceRoutine()
+    {
+        // Hide tutorial UI and unfreeze
+        tutorialPanel.SetActive(false);
+        Time.timeScale = 1f;
 
-    //     if (CurrentStep >= stepMessages.Length)
-    //     {
-    //         EndTutorial();
-    //         return;
-    //     }
+        float playTime = steps[stepIndex].playSecondsAfterPress;
 
-    //     UpdateUI();
-    // }
+        // If you want a short "play window" before next freeze:
+        if (playTime > 0f)
+        {
+            yield return new WaitForSecondsRealtime(playTime);
+        }
+        else
+        {
+            // If 0, we instantly go to next step (still works, but gameplay barely runs)
+            yield return null;
+        }
 
-    // private void UpdateUI()
-    // {
-    //     if (tutorialText != null && CurrentStep < stepMessages.Length)
-    //     {
-    //         tutorialText.text = stepMessages[CurrentStep];
-    //     }
+        int next = stepIndex + 1;
 
-    //     Debug.Log("Tutorial Step: " + CurrentStep);
-    // }
+        if (next >= steps.Length)
+        {
+            // Tutorial done: keep gameplay running
+            Time.timeScale = 1f;
+            tutorialPanel.SetActive(false);
+            yield break;
+        }
 
-    // public void StartHoldCheck()
-    // {
-    //     // Only start during step 4
-    //     if (CurrentStep != 4) return;
-
-    //     if (holdRoutine == null)
-    //         holdRoutine = StartCoroutine(HoldRoutine());
-    // }
-
-    // private IEnumerator HoldRoutine()
-    // {
-    //     float timer = 0f;
-
-    //     while (timer < holdDuration)
-    //     {
-    //         // Must be crouched and not moving
-    //         if (!player.IsCrouched() || player.IsMoving())
-    //         {
-    //             timer = 0f;
-    //         }
-    //         else
-    //         {
-    //             timer += Time.deltaTime;
-    //         }
-
-    //         yield return null;
-    //     }
-
-    //     holdRoutine = null;
-    //     CompleteStep();
-    // }
-
-    // private void EndTutorial()
-    // {
-    //     tutorialUI.SetActive(false);
-    //     Debug.Log("Tutorial Finished");
-
-    //     // Start earthquake gameplay
-    //     if (EarthquakeController.Instance != null)
-    //     {
-    //         EarthquakeController.Instance.StartQuake(1f);
-    //     }
-    // }
+        // Freeze again and show next instruction
+        StartStep(next);
+    }
 }

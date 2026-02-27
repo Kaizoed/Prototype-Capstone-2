@@ -1,28 +1,28 @@
-using System.Collections;
 using UnityEngine;
+using ShakySurvival.Earthquake;
 
 public class WallShatter : MonoBehaviour
 {
-    /* How to
-    1. Attach to wall game object
-    2. make prefab a child game object and set inactive in inspector
-    3. adjust timer*/
+    [SerializeField] private GameObject DestroyOriginal; // broken wall prefab (child, inactive)
+    private bool shattered = false;
 
-    [SerializeField] GameObject DestroyOriginal;
-    [SerializeField] private float ToShatter = 2f; //time before shattering
-
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    void Update()
     {
-        StartCoroutine(Shatter());
+        if (shattered) return;
+
+        // Break the first frame the earthquake is active
+        if (EarthquakeManager.Instance != null && EarthquakeManager.Instance.IsActive)
+        {
+            ShatterNow();
+        }
     }
 
-   IEnumerator Shatter()
+    private void ShatterNow()
     {
-        yield return new WaitForSeconds(ToShatter);
+        shattered = true;
 
-        gameObject.SetActive(false); //set original game object to inactive when shattering
-        DestroyOriginal.transform.SetParent(null); //detach child game object
-        DestroyOriginal.SetActive(true); //set active the wall prefab
-    }  
+        gameObject.SetActive(false);                 // hide intact wall object
+        DestroyOriginal.transform.SetParent(null);    // detach broken prefab
+        DestroyOriginal.SetActive(true);              // show broken wall
+    }
 }

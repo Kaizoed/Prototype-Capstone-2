@@ -691,7 +691,7 @@ MonoBehaviour:
   detectionRange: 3
   interactableLayer:
     serializedVersion: 2
-    m_Bits: 64
+    m_Bits: 0
   detectionOrigin: {fileID: 1369573455087694597}
 --- !u!114 &3716275967641008398
 MonoBehaviour:
