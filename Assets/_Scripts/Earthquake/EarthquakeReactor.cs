@@ -24,7 +24,6 @@ namespace ShakySurvival.Earthquake
         [Header("Debug")]
         [SerializeField] private bool debugMode = false;
 
-        // ── Weight-data accessors ────────────────────────────────────
         private float JoltMultiplier => weightData != null ? weightData.JoltMultiplier : fallbackJoltMultiplier;
         private float BaseJoltVelocity => weightData != null ? weightData.BaseJoltVelocity : fallbackBaseJoltVelocity;
         private float MaxJoltVelocity => weightData != null ? weightData.MaxJoltVelocity : fallbackMaxJoltVelocity;
@@ -34,7 +33,6 @@ namespace ShakySurvival.Earthquake
         private float VerticalHopChance => weightData != null ? weightData.VerticalHopChance : fallbackVerticalHopChance;
         private float MinimumIntensity => weightData != null ? weightData.MinimumIntensity : fallbackMinimumIntensity;
 
-        // ── State ────────────────────────────────────────────────────
         private Rigidbody _rigidbody;
         private EarthquakeStrength _currentStrength;
         private bool _isActive;
@@ -44,9 +42,8 @@ namespace ShakySurvival.Earthquake
         public bool IsReacting => _isActive && _currentStrength.NormalizedIntensity > MinimumIntensity;
         public EarthquakeWeightData WeightData => weightData;
 
-        // ══════════════════════════════════════════════════════════════
-        // Lifecycle
-        // ══════════════════════════════════════════════════════════════
+        /// Assign weight data at runtime (used by ProgressiveDestruction to add dynamically to fragments).
+        public void SetWeightData(EarthquakeWeightData data) => weightData = data;
 
         private void Awake()
         {
@@ -76,6 +73,15 @@ namespace ShakySurvival.Earthquake
             EarthquakeEvents.OnEarthquakeStart += OnEarthquakeStart;
             EarthquakeEvents.OnEarthquakeStop += OnEarthquakeStop;
             EarthquakeEvents.OnIntensityChange += OnIntensityChange;
+
+            // If added mid-earthquake (e.g. by ProgressiveDestruction during collapse),
+            // the OnEarthquakeStart event was already fired before this component existed.
+            // Catch up by self-activating with the manager's current state.
+            if (!_isActive && EarthquakeManager.Instance != null && EarthquakeManager.Instance.IsActive)
+            {
+                OnEarthquakeStart();
+                OnIntensityChange(EarthquakeManager.Instance.CurrentStrength);
+            }
         }
 
         private void OnDisable()
@@ -97,10 +103,6 @@ namespace ShakySurvival.Earthquake
                 ScheduleNextJolt();
             }
         }
-
-        // ══════════════════════════════════════════════════════════════
-        // Event handlers
-        // ══════════════════════════════════════════════════════════════
 
         private void OnEarthquakeStart()
         {
@@ -131,10 +133,6 @@ namespace ShakySurvival.Earthquake
             // Recalculate jolt interval: higher frequency multiplier → shorter intervals
             UpdateJoltInterval(strength.FrequencyMultiplier);
         }
-
-        // ══════════════════════════════════════════════════════════════
-        // Jolt logic
-        // ══════════════════════════════════════════════════════════════
 
         private void UpdateJoltInterval(float frequencyMultiplier)
         {
@@ -199,9 +197,6 @@ namespace ShakySurvival.Earthquake
             }
         }
 
-        // ══════════════════════════════════════════════════════════════
-        // Context menu helpers
-        // ══════════════════════════════════════════════════════════════
 
         [ContextMenu("Test Jolt")]
         public void TestJolt()

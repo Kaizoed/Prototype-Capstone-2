@@ -2,13 +2,12 @@ namespace ShakySurvival.Earthquake
 {
     public readonly struct EarthquakeStrength
     {
-        // Raw Richter magnitude (e.g. 4.5, 7.0)
+        // Raw Richter magnitude (3-9)
         public readonly float Magnitude;
 
         // Logarithmic force multiplier (0 → 1+)
         // Drives jolt velocity / hop velocity on reactors
         public readonly float ForceMultiplier;
-
 
         // Drives vibration frequency on reactors and camera shake frequency
         public readonly float FrequencyMultiplier;

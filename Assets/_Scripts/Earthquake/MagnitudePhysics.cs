@@ -8,7 +8,7 @@ namespace ShakySurvival.Earthquake
     // roughly 10× more energy.
     public static class MagnitudePhysics
     {
-        // ── Supported range ──────────────────────────────────────────
+        // Supported range
         public const float MIN_MAGNITUDE = 3f;
         public const float MAX_MAGNITUDE = 9f;
 
@@ -19,7 +19,6 @@ namespace ShakySurvival.Earthquake
 
         // AnimationCurve on EarthquakeManager if they want a different feel
         private const float FORCE_EXPONENT_SCALE = 1f;
-
 
         // Converts magnitude to force multiplier using logarithmic scaling
         // The result is then normalised so that the full range maps cleanly
