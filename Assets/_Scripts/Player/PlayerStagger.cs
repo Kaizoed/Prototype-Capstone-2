@@ -44,9 +44,7 @@ namespace ShakySurvival.Player
         public bool IsStaggering => _isStaggering;
         public float CurrentChance { get; private set; }
         
-        /// <summary>
-        /// When true, stagger checks are skipped (e.g., while hiding under cover).
-        /// </summary>
+        /// When true, stagger checks are skipped (while hiding under cover).
         public bool IsImmune { get; set; }
 
         private void Awake()
@@ -85,7 +83,7 @@ namespace ShakySurvival.Player
                 return;
             }
 
-            // Skip if immune (e.g., hiding under cover)
+            // Skip if immune (hiding under cover)
             if (IsImmune)
             {
                 CurrentChance = 0f;
