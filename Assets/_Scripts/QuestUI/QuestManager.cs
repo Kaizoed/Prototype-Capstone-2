@@ -4,8 +4,6 @@ public class QuestManager : MonoBehaviour
 {
     public static QuestManager Instance;
 
-    [SerializeField] private QuestUI_FixedList ui;
-
     [System.Serializable]
     public class Step
     {
@@ -13,17 +11,26 @@ public class QuestManager : MonoBehaviour
         [TextArea] public string text;
     }
 
+    [SerializeField] private QuestUI_FixedList ui;
     [SerializeField] private Step[] steps;
+
     private int currentIndex = 0;
 
-    void Awake() => Instance = this;
+    private void Awake()
+    {
+        Instance = this;
+    }
 
-    void Start() => RefreshUI();
+    private void Start()
+    {
+        RefreshUI();
+    }
 
-    void RefreshUI()
+    private void RefreshUI()
     {
         string[] texts = new string[steps.Length];
-        for (int i = 0; i < steps.Length; i++) texts[i] = steps[i].text;
+        for (int i = 0; i < steps.Length; i++)
+            texts[i] = steps[i].text;
 
         ui.SetSteps(texts, currentIndex);
     }
@@ -32,10 +39,9 @@ public class QuestManager : MonoBehaviour
     {
         if (currentIndex >= steps.Length) return;
 
-        if (steps[currentIndex].id == id)
-        {
-            currentIndex++;
-            RefreshUI();
-        }
+        if (steps[currentIndex].id != id) return; // prevents skipping
+
+        currentIndex++;
+        RefreshUI();
     }
 }
