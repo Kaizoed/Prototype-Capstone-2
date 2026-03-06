@@ -13,12 +13,27 @@ public class DoorInteractable : MonoBehaviour, IInteractable
     [Header("Prompt Text")]
     [SerializeField] private string openText = "Open Door";
     [SerializeField] private string closeText = "Close Door";
+    [SerializeField] private string lockedText = "Door is locked";
+
+    [Header("Quest Lock")]
+    [SerializeField] private bool lockedUntilQuestStep = true;
+    [SerializeField] private string requiredQuestStepId = "Go To Classroom";
 
     private bool isOpen;
+    private bool hasBeenUnlocked;
     private Quaternion closedRotation;
     private Quaternion openRotation;
 
-    public string InteractionPrompt => isOpen ? closeText : openText;
+    public string InteractionPrompt
+    {
+        get
+        {
+            if (IsLocked())
+                return lockedText;
+
+            return isOpen ? closeText : openText;
+        }
+    }
 
     private void Start()
     {
@@ -36,7 +51,6 @@ public class DoorInteractable : MonoBehaviour, IInteractable
     private void Update()
     {
         Quaternion target = isOpen ? openRotation : closedRotation;
-
         doorPivot.localRotation = Quaternion.Slerp(
             doorPivot.localRotation,
             target,
@@ -51,6 +65,33 @@ public class DoorInteractable : MonoBehaviour, IInteractable
 
     public void Interact(GameObject interactor)
     {
+        if (IsLocked())
+        {
+            Debug.Log("Door is locked.");
+            return;
+        }
+
         isOpen = !isOpen;
+    }
+
+    private bool IsLocked()
+    {
+        if (!lockedUntilQuestStep)
+            return false;
+
+        if (hasBeenUnlocked)
+            return false;
+
+        if (QuestManager.Instance == null)
+            return true;
+
+        // Unlock permanently once this quest step becomes current
+        if (QuestManager.Instance.CurrentStepId == requiredQuestStepId)
+        {
+            hasBeenUnlocked = true;
+            return false;
+        }
+
+        return true;
     }
 }

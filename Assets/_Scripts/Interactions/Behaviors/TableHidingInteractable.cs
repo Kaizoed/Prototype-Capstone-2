@@ -9,12 +9,17 @@ namespace ShakySurvival.Interactions.Behaviors
     {
         [Header("Cover Configuration")]
         [SerializeField] private CoverSpot coverSpot;
-        
+
         [Header("Prompts")]
         [SerializeField] private string hidePrompt = "Hide";
         [SerializeField] private string exitPrompt = "Exit";
 
+        [Header("Quest")]
+        [SerializeField] private string hideDeskQuestId = "HideUnderDesk";
+        [SerializeField] private bool completeQuestOnHide = true;
+
         private PlayerCoverController _playerController;
+        private bool _questCompleted;
 
         public string InteractionPrompt
         {
@@ -88,7 +93,14 @@ namespace ShakySurvival.Interactions.Behaviors
             // Toggle based on current state
             if (_playerController.CurrentState == CoverState.Idle)
             {
-                _playerController.EnterCover(coverSpot);
+                bool enteredCover = _playerController.EnterCover(coverSpot);
+
+                if (enteredCover && completeQuestOnHide && !_questCompleted)
+                {
+                    Debug.Log("Completing quest step: " + hideDeskQuestId);
+                    QuestManager.Instance?.CompleteStep(hideDeskQuestId);
+                    _questCompleted = true;
+                }
             }
             else if (_playerController.CurrentState == CoverState.Hidden)
             {

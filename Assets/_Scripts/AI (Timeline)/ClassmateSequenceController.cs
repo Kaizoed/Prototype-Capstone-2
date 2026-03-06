@@ -34,6 +34,7 @@ public class ClassmateSequenceController : MonoBehaviour
     [SerializeField] private string helpQuestId = "HelpClassmate";
 
     [Header("Timing")]
+    [SerializeField] private float earthquakeStartDelay = 2f;
     [SerializeField] private float runOutsideDelay = 1.2f;
     [SerializeField] private float reachDistance = 0.8f;
 
@@ -48,22 +49,6 @@ public class ClassmateSequenceController : MonoBehaviour
         if (agent == null) agent = GetComponent<NavMeshAgent>();
     }
 
-    private void OnEarthquakeStarted()
-    {
-        if (CurrentState == ClassmateState.Talking || CurrentState == ClassmateState.Idle)
-        {
-            CurrentState = ClassmateState.EarthquakeCrouch;
-        }
-
-        animator?.SetBool(earthquakeCrouchParam, true);
-
-        if (agent != null)
-        {
-            agent.isStopped = true;
-            agent.velocity = Vector3.zero;
-        }
-    }
-
     private void OnEnable()
     {
         EarthquakeEvents.OnEarthquakeStart += OnEarthquakeStarted;
@@ -74,6 +59,12 @@ public class ClassmateSequenceController : MonoBehaviour
     {
         EarthquakeEvents.OnEarthquakeStart -= OnEarthquakeStarted;
         EarthquakeEvents.OnEarthquakeStop -= OnEarthquakeEnded;
+
+        CancelInvoke(nameof(StartDelayedEarthquakeSequence));
+        CancelInvoke(nameof(RunOutside));
+
+        if (dialogueManager != null)
+            dialogueManager.OnDialogueEnded -= HandleIntroDialogueEnded;
     }
 
     private void Start()
@@ -118,8 +109,11 @@ public class ClassmateSequenceController : MonoBehaviour
             dialogueManager.OnDialogueEnded += HandleIntroDialogueEnded;
             dialogueManager.StartDialogue(introDialogue);
         }
-
-        QuestManager.Instance?.CompleteStep(talkQuestId);
+        else
+        {
+            // Fallback: no dialogue assigned, still continue sequence
+            Invoke(nameof(StartDelayedEarthquakeSequence), earthquakeStartDelay);
+        }
     }
 
     private void HandleIntroDialogueEnded()
@@ -131,7 +125,32 @@ public class ClassmateSequenceController : MonoBehaviour
         if (dialogueManager != null)
             dialogueManager.OnDialogueEnded -= HandleIntroDialogueEnded;
 
+        Invoke(nameof(StartDelayedEarthquakeSequence), earthquakeStartDelay);
+    }
+
+    private void StartDelayedEarthquakeSequence()
+    {
+        // Complete "TalkToClassmate" only when the delayed earthquake sequence actually begins
+        QuestManager.Instance?.CompleteStep(talkQuestId);
+
+        _earthquakeEnded = false;
         EarthquakeManager.Instance?.StartEarthquake();
+    }
+
+    private void OnEarthquakeStarted()
+    {
+        if (CurrentState == ClassmateState.Talking || CurrentState == ClassmateState.Idle)
+        {
+            CurrentState = ClassmateState.EarthquakeCrouch;
+        }
+
+        animator?.SetBool(earthquakeCrouchParam, true);
+
+        if (agent != null)
+        {
+            agent.isStopped = true;
+            agent.velocity = Vector3.zero;
+        }
     }
 
     public void OnWallExplosionHit()
@@ -162,6 +181,11 @@ public class ClassmateSequenceController : MonoBehaviour
         if (CurrentState == ClassmateState.Fallen)
         {
             CurrentState = ClassmateState.WaitingForHelp;
+        }
+        else if (CurrentState == ClassmateState.EarthquakeCrouch)
+        {
+            animator?.SetBool(earthquakeCrouchParam, false);
+            CurrentState = ClassmateState.Idle;
         }
     }
 

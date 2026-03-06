@@ -16,6 +16,18 @@ public class QuestManager : MonoBehaviour
 
     private int currentIndex = 0;
 
+    public int CurrentIndex => currentIndex;
+
+    public string CurrentStepId
+    {
+        get
+        {
+            if (steps == null || steps.Length == 0) return string.Empty;
+            if (currentIndex < 0 || currentIndex >= steps.Length) return string.Empty;
+            return steps[currentIndex].id;
+        }
+    }
+
     private void Awake()
     {
         Instance = this;
@@ -39,7 +51,7 @@ public class QuestManager : MonoBehaviour
     {
         if (currentIndex >= steps.Length) return;
 
-        if (steps[currentIndex].id != id) return; // prevents skipping
+        if (steps[currentIndex].id != id) return;
 
         currentIndex++;
         RefreshUI();
