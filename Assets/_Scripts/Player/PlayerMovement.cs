@@ -37,7 +37,7 @@ namespace ShakySurvival.Player
 
         public MoveState CurrentMoveState { get; private set; } = MoveState.Idle;
         public bool IsInputLocked { get; private set; }
-        public bool IsCrouching => CurrentMoveState == MoveState.Crouching;
+        public bool IsCrouching => CurrentMoveState == MoveState.Crouching || _forcedCrouch;
         public Vector3 Velocity => _velocity;
         public float SpeedMultiplier { get; private set; } = 1f;
         public Vector3 ExternalDrift { get; private set; } = Vector3.zero;
@@ -61,6 +61,7 @@ namespace ShakySurvival.Player
         private int _crouchHash;
         private Vector2 _animationVelocity;
         private bool _hasAnimator;
+        private bool _forcedCrouch;
 
         private void Awake()
         {
@@ -92,6 +93,16 @@ namespace ShakySurvival.Player
             CheckGrounded();
             HandleMovement();
             UpdateAnimator();
+        }
+
+        public void SetForcedCrouch(bool value)
+        {
+            _forcedCrouch = value;
+        }
+
+        public void ClearForcedCrouch()
+        {
+            _forcedCrouch = false;
         }
 
         private void SetupInputActions()
@@ -165,8 +176,22 @@ namespace ShakySurvival.Player
         }
 
         private void OnMove(InputAction.CallbackContext context) { _moveInput = context.ReadValue<Vector2>(); }
-        private void OnSprint(InputAction.CallbackContext context) { _sprintPressed = context.performed; }
-        private void OnCrouch(InputAction.CallbackContext context) { _crouchPressed = context.performed; }
+        private void OnSprint(InputAction.CallbackContext context) 
+        { 
+            _sprintPressed = context.performed;
+
+            if (_sprintPressed)
+            {
+                _crouchPressed = false;
+            }
+        }
+        private void OnCrouch(InputAction.CallbackContext context)
+        {
+            if (context.performed)
+            {
+                _crouchPressed = !_crouchPressed;
+            }
+        }
 
         public void LockInput()
         {
@@ -199,7 +224,7 @@ namespace ShakySurvival.Player
             float horizontal = IsInputLocked ? 0f : _moveInput.x;
             float vertical = IsInputLocked ? 0f : _moveInput.y;
 
-            bool wantsToCrouch = !IsInputLocked && _crouchPressed;
+            bool wantsToCrouch = _forcedCrouch || (!IsInputLocked && _crouchPressed);
             bool wantsToRun = !IsInputLocked && _sprintPressed && !wantsToCrouch;
 
             Vector3 moveDir = transform.right * horizontal + transform.forward * vertical;

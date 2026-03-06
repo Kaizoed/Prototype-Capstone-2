@@ -1,74 +1,56 @@
 using UnityEngine;
+using ShakySurvival.Interactions;
 
-public class DoorInteractablePivot : MonoBehaviour
+public class DoorInteractable : MonoBehaviour, IInteractable
 {
-    [Header("Door Pivot (the thing that rotates the door)")]
+    [Header("Door Pivot")]
     [SerializeField] private Transform doorPivot;
 
-    [Header("UI")]
-    [SerializeField] private GameObject pressUI;
-    [SerializeField] private string openText = "Press F to Open";
-    [SerializeField] private string closeText = "Press F to Close";
-
     [Header("Door Settings")]
-    [SerializeField] private float openAngle = 90f; // change to -90 if wrong direction
+    [SerializeField] private float openAngle = -90f;
     [SerializeField] private float openSpeed = 4f;
-    [SerializeField] private KeyCode interactKey = KeyCode.F;
 
-    private bool inRange;
+    [Header("Prompt Text")]
+    [SerializeField] private string openText = "Open Door";
+    [SerializeField] private string closeText = "Close Door";
+
     private bool isOpen;
-
     private Quaternion closedRotation;
     private Quaternion openRotation;
 
-    void Start()
+    public string InteractionPrompt => isOpen ? closeText : openText;
+
+    private void Start()
     {
-        if (!doorPivot)
+        if (doorPivot == null)
         {
-            Debug.LogError("DoorInteractablePivot: Assign doorPivot (door-rotate-square-d).");
+            Debug.LogError("DoorInteractable: doorPivot not assigned.", this);
             enabled = false;
             return;
         }
 
         closedRotation = doorPivot.localRotation;
         openRotation = closedRotation * Quaternion.Euler(0f, openAngle, 0f);
-
-        if (pressUI) pressUI.SetActive(false);
-        UpdateUIText();
     }
 
-    void Update()
+    private void Update()
     {
-        if (inRange && Input.GetKeyDown(interactKey))
-        {
-            isOpen = !isOpen;
-            UpdateUIText();
-        }
-
         Quaternion target = isOpen ? openRotation : closedRotation;
-        doorPivot.localRotation = Quaternion.Slerp(doorPivot.localRotation, target, Time.deltaTime * openSpeed);
+
+        doorPivot.localRotation = Quaternion.Slerp(
+            doorPivot.localRotation,
+            target,
+            Time.deltaTime * openSpeed
+        );
     }
 
-    void OnTriggerEnter(Collider other)
+    public bool CanInteract(GameObject interactor)
     {
-        if (!other.CompareTag("Player")) return;
-        inRange = true;
-        if (pressUI) pressUI.SetActive(true);
-        UpdateUIText();
+        return true;
     }
 
-    void OnTriggerExit(Collider other)
+    public void Interact(GameObject interactor)
     {
-        if (!other.CompareTag("Player")) return;
-        inRange = false;
-        if (pressUI) pressUI.SetActive(false);
-    }
-
-    void UpdateUIText()
-    {
-        if (!pressUI) return;
-
-        var tmp = pressUI.GetComponent<TMPro.TMP_Text>();
-        if (tmp) tmp.text = isOpen ? closeText : openText;
+        isOpen = !isOpen;
     }
 }

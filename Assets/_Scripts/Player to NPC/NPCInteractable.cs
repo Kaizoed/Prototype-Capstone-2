@@ -1,39 +1,36 @@
 using UnityEngine;
+using ShakySurvival.Interactions;
 
-public class NPCInteractable : MonoBehaviour, IInteractable
+public class NpcInteractable : MonoBehaviour, IInteractable
 {
-    [Header("Optional: NPC Drill")]
-    [SerializeField] private NPCDrillController drill; // your NPC drill script (go to cover/duck/hold)
+    [SerializeField] private DialogueManager dialogueManager;
+    [SerializeField] private DialogueData dialogueData;
 
-    [Header("Cover Point")]
-    [SerializeField] private Transform coverPoint;
+    [Header("Quest")]
+    [SerializeField] private string questStepId = "TalkToClassmate";
+    [SerializeField] private bool completeQuestOnInteract = true;
 
-    [Header("Debug")]
-    [SerializeField] private string npcName = "Student";
+    private bool _hasCompletedQuestStep = false;
 
-    private void Awake()
+    public string InteractionPrompt => "Press F to Talk";
+
+    public bool CanInteract(GameObject interactor)
     {
-        if (drill == null) drill = GetComponent<NPCDrillController>();
+        return dialogueManager != null && !dialogueManager.IsDialogueActive;
     }
 
-    public void Interact(PlayerInteractor interactor)
+    public void Interact(GameObject interactor)
     {
-        Debug.Log($"Interacted with {npcName}");
-
-        // Simple behavior options (pick one or keep all):
-        // 1) Just talk (debug for now)
-        // 2) Tell NPC to go to cover
-        // 3) Tell NPC to duck/hold
-
-        if (drill != null)
+        if (dialogueManager != null && dialogueData != null)
         {
-            // Set cover point if needed
-            drill.SetCoverPoint(coverPoint);
+            dialogueManager.StartDialogue(dialogueData);
+        }
 
-            // Example: Press E once -> go to cover
-            drill.GoToCover();
-
-            // You can later chain this or open a small UI menu
+        if (completeQuestOnInteract && !_hasCompletedQuestStep && QuestManager.Instance != null)
+        {
+            Debug.Log("Completing quest step: " + questStepId);
+            QuestManager.Instance.CompleteStep(questStepId);
+            _hasCompletedQuestStep = true;
         }
     }
 }

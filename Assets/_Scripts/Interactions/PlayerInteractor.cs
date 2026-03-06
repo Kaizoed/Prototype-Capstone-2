@@ -15,6 +15,7 @@ namespace ShakySurvival.Interactions
         [SerializeField] private InputActionAsset inputActions;
         [SerializeField] private string actionMapName = "Player";
         [SerializeField] private string interactActionName = "Interact";
+        [SerializeField] private DialogueManager dialogueManager;
 
         private InteractionDetector _detector;
         private InputActionMap _actionMap;
@@ -75,6 +76,13 @@ namespace ShakySurvival.Interactions
 
         private void TryInteract()
         {
+            // If dialogue is active, continue dialogue first
+            if (dialogueManager != null && dialogueManager.IsDialogueActive)
+            {
+                dialogueManager.NextLine();
+                return;
+            }
+
             // Cover exit bypass: if player is hidden, exit directly without raycast
             if (_coverController != null && _coverController.CurrentState == CoverState.Hidden)
             {
@@ -84,7 +92,7 @@ namespace ShakySurvival.Interactions
 
             // Normal interaction via raycast
             if (_detector == null) return;
-            
+
             IInteractable target = _detector.CurrentInteractable;
 
             if (target != null)
@@ -95,20 +103,29 @@ namespace ShakySurvival.Interactions
                 }
             }
         }
-        
+
         // Optional: Method to get current prompt for UI
         public string GetCurrentInteractionPrompt()
         {
+            // Hide interaction prompt while dialogue is active
+            if (dialogueManager != null && dialogueManager.IsDialogueActive)
+            {
+                return string.Empty;
+            }
+
             // Show exit prompt if in cover
             if (_coverController != null && _coverController.CurrentState == CoverState.Hidden)
             {
                 return "Exit";
             }
-            
-            if (_detector.CurrentInteractable != null && _detector.CurrentInteractable.CanInteract(this.gameObject))
+
+            if (_detector != null &&
+                _detector.CurrentInteractable != null &&
+                _detector.CurrentInteractable.CanInteract(this.gameObject))
             {
                 return _detector.CurrentInteractable.InteractionPrompt;
             }
+
             return string.Empty;
         }
     }

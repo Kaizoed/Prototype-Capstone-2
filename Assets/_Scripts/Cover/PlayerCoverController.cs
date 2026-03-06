@@ -93,7 +93,8 @@ namespace ShakySurvival.Cover
             // Lock player controls
             playerMovement?.LockInput();
             playerLook?.LockLook();
-            
+            playerMovement?.SetForcedCrouch(true);
+
             // Apply per-spot gameplay modifiers
             if (playerStagger != null) playerStagger.IsImmune = _activeCoverSpot.GrantStaggerImmunity;
             if (cameraShaker != null) cameraShaker.ShakeMultiplier = _activeCoverSpot.ShakeMultiplier;
@@ -169,6 +170,8 @@ namespace ShakySurvival.Cover
                 characterController.enabled = true;
             }
 
+            playerMovement?.SetForcedCrouch(false);
+
             // Restore camera shake
             if (cameraShaker != null) cameraShaker.ShakeMultiplier = 1f;
 
@@ -234,11 +237,13 @@ namespace ShakySurvival.Cover
                 characterController.height = _savedColliderHeight;
                 characterController.center = _savedColliderCenter;
             }
+
             
             playerLook?.DisableHorizontalClamp();
             playerLook?.SetVerticalLimits(80f, 80f);
             playerMovement?.UnlockInput();
             playerLook?.UnlockLook();
+            playerMovement?.SetForcedCrouch(false);
 
             _activeCoverSpot = null;
             _currentState = CoverState.Idle;
