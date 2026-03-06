@@ -4,6 +4,8 @@ using ShakySurvival.Player;
 
 public class DialogueManager : MonoBehaviour
 {
+    public System.Action OnDialogueEnded;
+
     [Header("UI")]
     [SerializeField] private GameObject dialoguePanel;
     [SerializeField] private TMP_Text speakerNameText;
@@ -67,8 +69,9 @@ public class DialogueManager : MonoBehaviour
         if (dialoguePanel != null)
             dialoguePanel.SetActive(false);
 
-        // Unlock player controls
         playerMovement?.UnlockInput();
         playerLook?.UnlockLook();
+
+        OnDialogueEnded?.Invoke();
     }
 }

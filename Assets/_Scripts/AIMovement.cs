@@ -53,7 +53,7 @@ public class AIMovement : MonoBehaviour
         if (newState == AIState.Idle)
         {
             animator.SetBool("isWalking", false);
-            animator.SetBool("isCrouching", false);
+            animator.SetBool("EarthquakeCrouch", false);
             agent.isStopped = true;
             idleTimer = idleTime;
         }
@@ -61,7 +61,7 @@ public class AIMovement : MonoBehaviour
         if (newState == AIState.Walk)
         {
             animator.SetBool("isWalking", true);
-            animator.SetBool("isCrouching", false);
+            animator.SetBool("EarthquakeCrouch", false);
             agent.isStopped = false;
 
             Vector3 randomPoint = RandomNavSphere(transform.position, wanderRadius);
@@ -71,7 +71,7 @@ public class AIMovement : MonoBehaviour
         if (newState == AIState.Crouch)
         {
             animator.SetBool("isWalking", false);
-            animator.SetBool("isCrouching", true);
+            animator.SetBool("EarthquakeCrouch", true);
             agent.isStopped = true;
         }
     }

@@ -36,7 +36,7 @@ AnimatorStateTransition:
   m_Name: 
   m_Conditions:
   - m_ConditionMode: 2
-    m_ConditionEvent: isCrouching
+    m_ConditionEvent: EarthquakeCrouch
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 1510469261997468692}
@@ -88,7 +88,7 @@ AnimatorStateTransition:
   m_Name: 
   m_Conditions:
   - m_ConditionMode: 1
-    m_ConditionEvent: isCrouching
+    m_ConditionEvent: EarthquakeCrouch
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: -8310300089183626512}
@@ -141,7 +141,7 @@ AnimatorController:
   m_Name: NPC10
   serializedVersion: 5
   m_AnimatorParameters:
-  - m_Name: isCrouching
+  - m_Name: EarthquakeCrouch
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0

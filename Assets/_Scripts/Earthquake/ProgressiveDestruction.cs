@@ -18,12 +18,14 @@ namespace ShakySurvival.Earthquake
         [Tooltip("Optional weight data assigned to each fragment's EarthquakeReactor.")]
         [SerializeField] private EarthquakeWeightData weightData;
 
+        [Header("NPC Reaction On Collapse")]
+        [SerializeField] private ClassmateSequenceController classmateSequenceController;
+
         private Rigidbody[] _fracturedBodies;
         private DestructionPhase _currentPhase = DestructionPhase.Intact;
 
         private void Awake()
         {
-            // Cache all child rigidbodies once so we never allocate during the earthquake.
             if (fracturedWall != null)
             {
                 _fracturedBodies = fracturedWall.GetComponentsInChildren<Rigidbody>(true);
@@ -42,7 +44,6 @@ namespace ShakySurvival.Earthquake
 
         private void Start()
         {
-            // Ensure we begin in the Intact state.
             SetPhaseIntact();
         }
 
@@ -55,7 +56,6 @@ namespace ShakySurvival.Earthquake
                 case DestructionPhase.Intact:
                     if (effectiveMagnitude >= crackingThreshold)
                     {
-                        // Jump straight to collapse if the reading exceeds both thresholds.
                         if (effectiveMagnitude >= collapseThreshold)
                         {
                             SetPhaseCracked();
@@ -107,8 +107,6 @@ namespace ShakySurvival.Earthquake
             if (fracturedWall != null)
             {
                 fracturedWall.SetActive(true);
-
-                // Keep every fragment frozen in place so the wall looks cracked but holds together.
                 SetFracturedBodiesKinematic(true);
             }
         }
@@ -117,14 +115,15 @@ namespace ShakySurvival.Earthquake
         {
             _currentPhase = DestructionPhase.Collapsed;
 
-            // Release all fragments so they react to gravity and earthquake jolts.
             SetFracturedBodiesKinematic(false);
-
-            // Dynamically add EarthquakeReactor to each fragment so they receive jolts.
             AddReactorsToFragments();
-        }
 
-        // ── Helpers ──────────────────────────────────────────────────
+            // Tell the classmate NPC to fall when the wall collapses
+            if (classmateSequenceController != null)
+            {
+                classmateSequenceController.OnWallExplosionHit();
+            }
+        }
 
         private void SetFracturedBodiesKinematic(bool isKinematic)
         {
@@ -144,7 +143,6 @@ namespace ShakySurvival.Earthquake
             {
                 GameObject fragment = _fracturedBodies[i].gameObject;
 
-                // Skip if a reactor already exists (safety check).
                 if (fragment.GetComponent<EarthquakeReactor>() != null) continue;
 
                 EarthquakeReactor reactor = fragment.AddComponent<EarthquakeReactor>();
