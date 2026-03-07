@@ -65,10 +65,17 @@ namespace ShakySurvival.Interactions.Behaviors
                 return false;
             }
 
-            // If player is Idle, check approach angle
+            // If player is Idle, check approach angle and occupancy
             if (_playerController.CurrentState == CoverState.Idle)
             {
                 if (coverSpot == null) return false;
+
+                // Block if already occupied by an NPC
+                if (coverSpot.IsOccupied && coverSpot.Occupant != interactor)
+                {
+                    return false;
+                }
+
                 return coverSpot.IsValidApproach(interactor.transform);
             }
 

@@ -24,8 +24,9 @@ namespace ShakySurvival.Player
 
         [Header("Stagger Effects")]
         [SerializeField, Range(0.1f, 0.8f)] private float slowdownMultiplier = 0.35f;
-        [SerializeField] private float driftStrength = 1.5f;
-        [SerializeField] private float driftRampSpeed = 3f;
+
+        [Header("Animation")]
+        [SerializeField] private Animator animator;
 
         [Header("Cinemachine Impulse (Optional)")]
         [SerializeField] private CinemachineImpulseSource impulseSource;
@@ -39,7 +40,10 @@ namespace ShakySurvival.Player
         private float _lastStaggerTime;
         private bool _isStaggering;
         private Coroutine _staggerCoroutine;
-        private int _driftDirection;
+
+        // Animation
+        private int _staggerHash;
+        private bool _hasAnimator;
 
         public bool IsStaggering => _isStaggering;
         public float CurrentChance { get; private set; }
@@ -50,6 +54,17 @@ namespace ShakySurvival.Player
         private void Awake()
         {
             _movement = GetComponent<PlayerMovement>();
+
+            if (animator == null)
+            {
+                _hasAnimator = TryGetComponent(out animator);
+            }
+            else
+            {
+                _hasAnimator = true;
+            }
+
+            _staggerHash = Animator.StringToHash("StaggerTrigger");
             
             if (impulseSource == null)
             {
@@ -170,23 +185,24 @@ namespace ShakySurvival.Player
             _isStaggering = true;
             _lastStaggerTime = Time.time;
 
-            _driftDirection = Random.value < 0.5f ? -1 : 1;
+            if (debugMode) Debug.Log("[PlayerStagger] Player staggering!");
 
-            if (debugMode) 
-            {
-                string dirName = _driftDirection < 0 ? "LEFT" : "RIGHT";
-                Debug.Log($"[PlayerStagger] Player staggering {dirName}!");
-            }
-
+            // Apply speed penalty
             _movement.SetSpeedMultiplier(slowdownMultiplier);
 
+            // Fire stagger animation (consumed once by the Animator)
+            if (_hasAnimator)
+            {
+                animator.SetTrigger(_staggerHash);
+            }
+
+            // Fire camera impulse
             if (impulseSource != null)
             {
                 impulseSource.GenerateImpulse(impulseForce);
             }
 
             float elapsed = 0f;
-            float currentDrift = 0f;
 
             while (elapsed < staggerDuration)
             {
@@ -197,14 +213,6 @@ namespace ShakySurvival.Player
                 }
 
                 elapsed += Time.deltaTime;
-                float normalizedTime = elapsed / staggerDuration;
-
-                float driftEnvelope = Mathf.Sin(normalizedTime * Mathf.PI);
-                currentDrift = Mathf.Lerp(currentDrift, driftEnvelope * driftStrength, driftRampSpeed * Time.deltaTime);
-
-                Vector3 driftVector = transform.right * _driftDirection * currentDrift;
-                _movement.SetExternalDrift(driftVector);
-
                 yield return null;
             }
 
@@ -216,7 +224,12 @@ namespace ShakySurvival.Player
         private void EndStagger()
         {
             _movement.SetSpeedMultiplier(1f);
-            _movement.SetExternalDrift(Vector3.zero);
+
+            if (_hasAnimator)
+            {
+                animator.ResetTrigger(_staggerHash);
+            }
+
             _isStaggering = false;
         }
     }

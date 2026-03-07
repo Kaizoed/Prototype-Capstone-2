@@ -303,7 +303,14 @@ namespace ShakySurvival.Player
             // Set animator parameters
             animator.SetFloat(_xVelHash, _animationVelocity.x);
             animator.SetFloat(_yVelHash, _animationVelocity.y);
-            animator.SetBool(_crouchHash, IsCrouching);
+
+            // Only drive Crouch from movement input when not locked.
+            // When locked (e.g. during cover transitions), the cover system
+            // drives the Crouch bool directly — we must not override it.
+            if (!IsInputLocked)
+            {
+                animator.SetBool(_crouchHash, IsCrouching);
+            }
         }
     }
 }

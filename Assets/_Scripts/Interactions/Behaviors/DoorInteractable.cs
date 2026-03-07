@@ -1,55 +1,152 @@
 using UnityEngine;
+using System.Collections;
 
 namespace ShakySurvival.Interactions.Behaviors
 {
-    // Just a placeholder until we implemented doors
-    // A basic door interaction that toggles between open and closed states.
+    public enum DoorState
+    {
+        Closed,
+        OpenIn,
+        OpenOut
+    }
+
+    public enum DetectionAxis
+    {
+        Forward,
+        Up,
+        Right
+    }
+
     public class DoorInteractable : MonoBehaviour, IInteractable
     {
         [Header("Door Settings")]
-        [SerializeField] private bool isOpen = false;
         [SerializeField] private bool isLocked = false;
         [SerializeField] private string lockedMessage = "Locked";
-        
-        [Header("Animation/Feedback")]
+
+        [Header("Animation")]
         [SerializeField] private Animator animator;
-        [SerializeField] private string openAnimationParameter = "IsOpen";
-        
-        // This could be replaced with a robust localization system later
-        public string InteractionPrompt => isLocked ? lockedMessage : (isOpen ? "Close" : "Open");
+        [Tooltip("How long to block re-interaction after triggering an animation.")]
+        [SerializeField] private float animationDuration = 1.0f;
+
+        [Header("Side Detection")]
+        [Tooltip("Transform whose axes are used for side detection. Defaults to this transform.")]
+        [SerializeField] private Transform doorTransform;
+        [Tooltip("Which local axis points THROUGH the door (perpendicular to the door face). Check the colored arrows in Scene view.")]
+        [SerializeField] private DetectionAxis detectionAxis = DetectionAxis.Forward;
+
+        private static readonly int SideParam = Animator.StringToHash("Side");
+        private static readonly int OpenTrigger = Animator.StringToHash("Open");
+        private static readonly int CloseTrigger = Animator.StringToHash("Close");
+
+        private DoorState _currentState = DoorState.Closed;
+        private bool _isAnimating = false;
+
+        public DoorState CurrentState => _currentState;
+
+        public string InteractionPrompt
+        {
+            get
+            {
+                if (isLocked) return lockedMessage;
+                if (_isAnimating) return string.Empty;
+                return _currentState == DoorState.Closed ? "Open" : "Close";
+            }
+        }
+
+        private void Awake()
+        {
+            if (doorTransform == null)
+                doorTransform = transform;
+        }
 
         public bool CanInteract(GameObject interactor)
         {
-            // Add custom conditions here (just in case we added more feature)
-            return true;
+            return !_isAnimating;
         }
 
         public void Interact(GameObject interactor)
         {
             if (isLocked)
             {
-                // Play locked sound or animation
                 Debug.Log("Door is locked.");
                 return;
             }
 
-            ToggleDoor();
+            if (_isAnimating) return;
+
+            if (_currentState == DoorState.Closed)
+            {
+                OpenDoor(interactor);
+            }
+            else
+            {
+                CloseDoor();
+            }
         }
 
-        private void ToggleDoor()
+        private void OpenDoor(GameObject interactor)
         {
-            isOpen = !isOpen;
-            
+            float dot = GetSideDot(interactor.transform);
+
+            _currentState = dot >= 0f ? DoorState.OpenIn : DoorState.OpenOut;
+
             if (animator != null)
             {
-                animator.SetBool(openAnimationParameter, isOpen);
+                animator.SetFloat(SideParam, dot);
+                animator.SetTrigger(OpenTrigger);
             }
-            
-            // Play sound or something
-            Debug.Log($"Door is now {(isOpen ? "Open" : "Closed")}");
+
+            StartCoroutine(AnimationCooldown());
+            Debug.Log($"Door: Open ({(dot >= 0f ? "In" : "Out")}, dot: {dot:F2})");
         }
-        
-        // Helper to unlock via other game logic
+
+        private void CloseDoor()
+        {
+            if (animator != null)
+            {
+                animator.SetTrigger(CloseTrigger);
+            }
+
+            _currentState = DoorState.Closed;
+            StartCoroutine(AnimationCooldown());
+            Debug.Log("Door: Close");
+        }
+
+        private Vector3 GetDetectionDirection()
+        {
+            switch (detectionAxis)
+            {
+                case DetectionAxis.Up:      return doorTransform.up;
+                case DetectionAxis.Right:   return doorTransform.right;
+                case DetectionAxis.Forward:
+                default:                    return doorTransform.forward;
+            }
+        }
+
+        private float GetSideDot(Transform player)
+        {
+            // Get the configured axis and flatten to horizontal
+            Vector3 throughDoor = GetDetectionDirection();
+            throughDoor.y = 0f;
+            throughDoor.Normalize();
+
+            // Flatten positions to remove height difference
+            Vector3 doorPos = doorTransform.position;
+            Vector3 playerPos = player.position;
+            doorPos.y = 0f;
+            playerPos.y = 0f;
+
+            Vector3 toPlayer = (playerPos - doorPos).normalized;
+            return Vector3.Dot(throughDoor, toPlayer);
+        }
+
+        private IEnumerator AnimationCooldown()
+        {
+            _isAnimating = true;
+            yield return new WaitForSeconds(animationDuration);
+            _isAnimating = false;
+        }
+
         public void SetLocked(bool locked)
         {
             isLocked = locked;

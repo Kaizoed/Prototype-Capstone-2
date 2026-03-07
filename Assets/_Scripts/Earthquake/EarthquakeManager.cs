@@ -191,8 +191,6 @@ namespace ShakySurvival.Earthquake
             CurrentStrength = EarthquakeStrength.Zero;
             _previousStrength = EarthquakeStrength.Zero;
             IsActive = true;
-
-            Debug.Log($"[EarthquakeManager] Earthquake started! Magnitude: {_activeMagnitude:F1}, Duration: {_activeDuration}s");
             EarthquakeEvents.RaiseEarthquakeStart();
         }
 

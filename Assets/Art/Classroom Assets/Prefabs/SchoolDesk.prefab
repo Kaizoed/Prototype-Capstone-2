@@ -13,7 +13,6 @@ GameObject:
   - component: {fileID: 2219106119083232358}
   - component: {fileID: 7008898983731432129}
   - component: {fileID: 154505347094136268}
-  - component: {fileID: 7690234833616531425}
   m_Layer: 0
   m_Name: SchoolDesk
   m_TagString: Untagged
@@ -137,17 +136,3 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.0142995, y: 0.8719819, z: 0.60374933}
   m_Center: {x: -0.0000023543835, y: 0.43659583, z: 0.22427092}
---- !u!114 &7690234833616531425
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3494421824333646459}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9dec49e78a494b445bfa8321a5a6e43b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  inspectorGroundOverride: {fileID: 0}
-  weightMultiplier: 1.92

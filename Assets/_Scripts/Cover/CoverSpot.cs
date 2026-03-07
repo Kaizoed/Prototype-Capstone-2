@@ -4,19 +4,48 @@ namespace ShakySurvival.Cover
 {
     public class CoverSpot : MonoBehaviour
     {
+        [Header("Occupancy")]
+        [Tooltip("Read-only. Shows who is currently occupying this cover spot.")]
+        [SerializeField] private GameObject currentOccupant;
+
+        /// <summary>True if an NPC or the player is currently using this cover.</summary>
+        public bool IsOccupied => currentOccupant != null;
+
+        /// <summary>Who is currently occupying this spot (null if empty).</summary>
+        public GameObject Occupant => currentOccupant;
+
+        /// <summary>
+        /// Attempt to reserve this cover for <paramref name="requester"/>.
+        /// Returns true if the spot was free (or already owned by requester).
+        /// </summary>
+        public bool TryOccupy(GameObject requester)
+        {
+            if (currentOccupant == null || currentOccupant == requester)
+            {
+                currentOccupant = requester;
+                return true;
+            }
+            return false; // Someone else is already here.
+        }
+
+        /// <summary>Release this cover spot (only the current occupant can release).</summary>
+        public void Release(GameObject requester)
+        {
+            if (currentOccupant == requester)
+                currentOccupant = null;
+        }
+
+        /// <summary>Force-release regardless of who holds it.</summary>
+        public void ForceRelease()
+        {
+            currentOccupant = null;
+        }
         [Header("Transforms")]
         [Tooltip("Where the player is positioned while hiding.")]
         [SerializeField] private Transform hideAnchor;
         
         [Tooltip("Where the player exits to after leaving cover.")]
         [SerializeField] private Transform exitPoint;
-        
-        [Header("Transition Timing")]
-        [Tooltip("Duration of the entry transition (from current position to HideAnchor).")]
-        [SerializeField] private float entryTransitionDuration = 0.8f;
-        
-        [Tooltip("Duration of the exit transition (from HideAnchor to ExitPoint).")]
-        [SerializeField] private float exitTransitionDuration = 0.6f;
 
         [Header("Camera Settings")]
         [Tooltip("Maximum horizontal look angle while hidden (degrees from center).")]
@@ -41,14 +70,7 @@ namespace ShakySurvival.Cover
         
         [Tooltip("Camera shake multiplier while in this cover (0 = no shake, 1 = full shake).")]
         [SerializeField, Range(0f, 1f)] private float shakeMultiplier = 0.25f;
-        
-        [Header("Transition Easing")]
-        [Tooltip("Easing curve for entry transition (position and rotation).")]
-        [SerializeField] private AnimationCurve entryEasing = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
-        
-        [Tooltip("Easing curve for exit transition (position and rotation).")]
-        [SerializeField] private AnimationCurve exitEasing = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
-        
+
         [Header("Validation")]
         [Tooltip("Maximum angle from the entry direction that the player can approach from.")]
         [SerializeField] private float maxApproachAngle = 60f;
@@ -56,8 +78,7 @@ namespace ShakySurvival.Cover
         // Public accessors
         public Transform HideAnchor => hideAnchor;
         public Transform ExitPoint => exitPoint;
-        public float EntryTransitionDuration => entryTransitionDuration;
-        public float ExitTransitionDuration => exitTransitionDuration;
+
         public float MaxLookYaw => maxLookYaw;
         public float MaxLookUp => maxLookUp;
         public float MaxLookDown => maxLookDown;
@@ -65,8 +86,7 @@ namespace ShakySurvival.Cover
         public float ColliderVerticalOffset => colliderVerticalOffset;
         public bool GrantStaggerImmunity => grantStaggerImmunity;
         public float ShakeMultiplier => shakeMultiplier;
-        public AnimationCurve EntryEasing => entryEasing;
-        public AnimationCurve ExitEasing => exitEasing;
+
         public float MaxApproachAngle => maxApproachAngle;
 
 

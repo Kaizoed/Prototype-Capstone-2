@@ -13,13 +13,14 @@ GameObject:
   - component: {fileID: 8840676591681411550}
   - component: {fileID: 7994300107221449591}
   - component: {fileID: 3179243977809106747}
-  - component: {fileID: 1421121868330018986}
+  - component: {fileID: 922717315498896188}
+  - component: {fileID: 7973477643880760628}
   m_Layer: 0
   m_Name: SchoolChair
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 58
   m_IsActive: 1
 --- !u!4 &8862299225508910689
 Transform:
@@ -31,7 +32,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.92222, y: 0.92222, z: 0.92222}
+  m_LocalScale: {x: 2.2264237, y: 2.2264235, z: 2.2264237}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -137,7 +138,23 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &1421121868330018986
+--- !u!208 &922717315498896188
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6065070579436315592}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 0.261, y: 0.555, z: 0.00001}
+  m_MoveThreshold: 0.1
+  m_Carve: 1
+  m_CarveOnlyStationary: 0
+  m_Center: {x: 0, y: 0.555, z: 0}
+  m_TimeToStationary: 0.5
+--- !u!114 &7973477643880760628
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -146,8 +163,17 @@ MonoBehaviour:
   m_GameObject: {fileID: 6065070579436315592}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9dec49e78a494b445bfa8321a5a6e43b, type: 3}
+  m_Script: {fileID: 11500000, guid: 0e58b5708bcd8024dab99391a58c5029, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  inspectorGroundOverride: {fileID: 0}
-  weightMultiplier: 1
+  weightData: {fileID: 11400000, guid: dffb2aa73f53def438807c5c6f3a65b6, type: 2}
+  fallbackJoltMultiplier: 1
+  fallbackBaseJoltVelocity: 0.3
+  fallbackMaxJoltVelocity: 1.2
+  fallbackVibrationFrequency: 10
+  fallbackAngularJoltMultiplier: 0.3
+  fallbackVerticalHopVelocity: 0.15
+  fallbackVerticalHopChance: 0.7
+  fallbackMinimumIntensity: 0.1
+  randomizeJoltTiming: 1
+  debugMode: 0
