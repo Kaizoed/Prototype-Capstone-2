@@ -1,6 +1,7 @@
 using UnityEngine;
 using TMPro;
 using System.Collections;
+using ShakySurvival.Earthquake;
 
 public class TutorialManager : MonoBehaviour
 {
@@ -11,10 +12,29 @@ public class TutorialManager : MonoBehaviour
     [Header("Steps")]
     public TutorialStep[] steps;
 
+    [Header("Objectives")]
+    [SerializeField] private GameObject questPanel;
+
+    [Header("Earthquake")]
+    [SerializeField] private EarthquakeManager earthquakeManager;
+    [SerializeField] private float earthquakeDelayAfterTutorial = 2f;
+
+    [Header("Earthquake Objectives")]
+    [SerializeField] private QuestManager.Step[] earthquakeQuestSteps;
+
     private int stepIndex = 0;
     private bool waitingForKey = false;
 
     void Start()
+    {
+        if (tutorialPanel != null)
+            tutorialPanel.SetActive(false);
+
+        if (questPanel != null)
+            questPanel.SetActive(false);
+    }
+
+    public void StartTutorial()
     {
         if (steps == null || steps.Length == 0)
         {
@@ -22,6 +42,7 @@ public class TutorialManager : MonoBehaviour
             return;
         }
 
+        stepIndex = 0;
         StartStep(0);
     }
 
@@ -29,8 +50,8 @@ public class TutorialManager : MonoBehaviour
     {
         if (!waitingForKey) return;
 
-        // Only allow the keys listed in the current step
-       var keys = steps[stepIndex].GetKeys();
+        var keys = steps[stepIndex].GetKeys();
+
         for (int i = 0; i < keys.Length; i++)
         {
             if (Input.GetKeyDown(keys[i]))
@@ -46,10 +67,8 @@ public class TutorialManager : MonoBehaviour
     {
         stepIndex = index;
 
-        // Freeze gameplay
         Time.timeScale = 0f;
 
-        // Show UI
         tutorialPanel.SetActive(true);
         tutorialText.text = steps[stepIndex].instruction;
 
@@ -58,20 +77,17 @@ public class TutorialManager : MonoBehaviour
 
     IEnumerator AdvanceRoutine()
     {
-        // Hide tutorial UI and unfreeze
         tutorialPanel.SetActive(false);
         Time.timeScale = 1f;
 
         float playTime = steps[stepIndex].playSecondsAfterPress;
 
-        // If you want a short "play window" before next freeze:
         if (playTime > 0f)
         {
             yield return new WaitForSecondsRealtime(playTime);
         }
         else
         {
-            // If 0, we instantly go to next step (still works, but gameplay barely runs)
             yield return null;
         }
 
@@ -79,13 +95,35 @@ public class TutorialManager : MonoBehaviour
 
         if (next >= steps.Length)
         {
-            // Tutorial done: keep gameplay running
             Time.timeScale = 1f;
             tutorialPanel.SetActive(false);
+
+            yield return new WaitForSecondsRealtime(earthquakeDelayAfterTutorial);
+
+            if (questPanel != null)
+                questPanel.SetActive(true);
+
+            if (QuestManager.Instance != null)
+            {
+                QuestManager.Instance.SetSteps(earthquakeQuestSteps, 0);
+            }
+            else
+            {
+                Debug.LogWarning("QuestManager.Instance is null.");
+            }
+
+            if (earthquakeManager != null)
+            {
+                earthquakeManager.StartEarthquake();
+            }
+            else
+            {
+                Debug.LogWarning("EarthquakeManager is not assigned.");
+            }
+
             yield break;
         }
 
-        // Freeze again and show next instruction
         StartStep(next);
     }
 }

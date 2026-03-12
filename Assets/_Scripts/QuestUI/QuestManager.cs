@@ -40,6 +40,8 @@ public class QuestManager : MonoBehaviour
 
     private void RefreshUI()
     {
+        if (ui == null || steps == null) return;
+
         string[] texts = new string[steps.Length];
         for (int i = 0; i < steps.Length; i++)
             texts[i] = steps[i].text;
@@ -49,11 +51,17 @@ public class QuestManager : MonoBehaviour
 
     public void CompleteStep(string id)
     {
-        if (currentIndex >= steps.Length) return;
-
+        if (steps == null || currentIndex >= steps.Length) return;
         if (steps[currentIndex].id != id) return;
 
         currentIndex++;
+        RefreshUI();
+    }
+
+    public void SetSteps(Step[] newSteps, int startIndex = 0)
+    {
+        steps = newSteps;
+        currentIndex = Mathf.Clamp(startIndex, 0, steps.Length > 0 ? steps.Length - 1 : 0);
         RefreshUI();
     }
 }

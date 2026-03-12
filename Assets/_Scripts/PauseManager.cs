@@ -1,10 +1,15 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using ShakySurvival.Player;
 
 public class PauseManager : MonoBehaviour
 {
     [Header("UI")]
     [SerializeField] private GameObject pausePanel;
+
+    [Header("Player")]
+    [SerializeField] private MonoBehaviour playerMovement;
+    [SerializeField] private PlayerLook playerLook;
 
     [Header("Cursor")]
     [SerializeField] private bool lockCursorWhenUnpaused = true;
@@ -13,7 +18,6 @@ public class PauseManager : MonoBehaviour
 
     private void Start()
     {
-        // Ensure starting state
         SetPaused(false);
     }
 
@@ -37,7 +41,6 @@ public class PauseManager : MonoBehaviour
 
     public void RestartScene()
     {
-        // Unpause before reload so timescale resets correctly
         Time.timeScale = 1f;
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
@@ -59,6 +62,13 @@ public class PauseManager : MonoBehaviour
             pausePanel.SetActive(paused);
 
         Time.timeScale = paused ? 0f : 1f;
+
+        // Disable player controls
+        if (playerMovement != null)
+            playerMovement.enabled = !paused;
+
+        if (playerLook != null)
+            playerLook.enabled = !paused;
 
         // Cursor handling
         if (paused)
