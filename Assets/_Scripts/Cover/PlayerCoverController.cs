@@ -29,6 +29,13 @@ namespace ShakySurvival.Cover
         [Tooltip("How long to wait for an animation crossfade to settle (seconds).")]
         [SerializeField] private float animBlendTime = 0.25f;
 
+        [Header("Cover Movement Tuning")]
+        [Tooltip("How close the player must get to the target before crawl ends.")]
+        [SerializeField] private float arrivalThreshold = 0.2f;
+
+        [Tooltip("Maximum time allowed for crawl movement before forcing completion.")]
+        [SerializeField] private float maxCrawlTime = 3f;
+
         [Header("Ground Snapping")]
         [Tooltip("Layers considered 'ground' for the downward raycast.")]
         [SerializeField] private LayerMask groundLayer = ~0;
@@ -59,10 +66,6 @@ namespace ShakySurvival.Cover
         public bool IsInCover => _currentState != CoverState.Idle;
         public bool CanInteract => _currentState == CoverState.Idle || _currentState == CoverState.Hidden;
 
-        // ──────────────────────────────────────────────
-        // Lifecycle
-        // ──────────────────────────────────────────────
-
         private void Awake()
         {
             if (playerMovement == null) playerMovement = GetComponent<PlayerMovement>();
@@ -76,11 +79,6 @@ namespace ShakySurvival.Cover
             _coverCrawlHash = Animator.StringToHash("CoverCrawl");
         }
 
-        // ──────────────────────────────────────────────
-        // Public API
-        // ──────────────────────────────────────────────
-
-        /// <summary>Attempts to enter cover at the specified spot.</summary>
         public bool EnterCover(CoverSpot spot)
         {
             if (_currentState != CoverState.Idle)
@@ -101,7 +99,6 @@ namespace ShakySurvival.Cover
                 return false;
             }
 
-            // Reserve the cover spot for the player.
             if (!spot.TryOccupy(gameObject))
             {
                 if (debugMode) Debug.Log("[PlayerCoverController] Cover spot is occupied!");
@@ -113,7 +110,6 @@ namespace ShakySurvival.Cover
             return true;
         }
 
-        /// <summary>Attempts to exit the current cover.</summary>
         public bool ExitCover()
         {
             if (_currentState != CoverState.Hidden)
@@ -132,7 +128,6 @@ namespace ShakySurvival.Cover
             return true;
         }
 
-        /// <summary>Immediately aborts any transition and returns to idle.</summary>
         public void ForceExit()
         {
             if (_transitionCoroutine != null)
@@ -141,18 +136,15 @@ namespace ShakySurvival.Cover
                 _transitionCoroutine = null;
             }
 
-            // Reset animator bools
             if (animator != null)
             {
                 animator.SetBool(_crouchHash, false);
                 animator.SetBool(_coverCrawlHash, false);
             }
 
-            // Reset gameplay modifiers
             if (cameraShaker != null) cameraShaker.ShakeMultiplier = 1f;
             if (playerStagger != null) playerStagger.IsImmune = false;
 
-            // Restore collider
             if (characterController != null)
             {
                 characterController.height = _savedColliderHeight;
@@ -160,13 +152,11 @@ namespace ShakySurvival.Cover
                 characterController.enabled = true;
             }
 
-            // Restore controls
             playerLook?.DisableHorizontalClamp();
             playerLook?.SetVerticalLimits(80f, 80f);
             playerMovement?.UnlockInput();
             playerLook?.UnlockLook();
 
-            // Release the cover spot.
             if (_activeCoverSpot != null)
                 _activeCoverSpot.Release(gameObject);
 
@@ -176,47 +166,35 @@ namespace ShakySurvival.Cover
             if (debugMode) Debug.Log("[PlayerCoverController] Force-exited from cover!");
         }
 
-        // ──────────────────────────────────────────────
-        // Entry Sequence (4 steps)
-        // ──────────────────────────────────────────────
-
         private IEnumerator EnterCoverRoutine()
         {
             _currentState = CoverState.Entering;
             if (debugMode) Debug.Log("[PlayerCoverController] State -> Entering");
 
-            // Lock player controls
             playerMovement?.LockInput();
             playerLook?.LockLook();
-            
-            // Apply per-spot gameplay modifiers
+
             if (playerStagger != null) playerStagger.IsImmune = _activeCoverSpot.GrantStaggerImmunity;
             if (cameraShaker != null) cameraShaker.ShakeMultiplier = _activeCoverSpot.ShakeMultiplier;
 
-            // Shrink collider for under-table clearance (controller stays enabled)
             SaveAndShrinkCollider();
 
-            // ── Step 1: Blend into Crouch Idle ──
             if (debugMode) Debug.Log("[PlayerCoverController] Step 1 – Blending to Crouch Idle");
             SetAnimatorState(crouch: true, crawl: false);
             yield return new WaitForSeconds(animBlendTime);
 
-            // ── Step 2: Crawl toward hideAnchor.position ──
             if (debugMode) Debug.Log("[PlayerCoverController] Step 2 – Crawling to HideAnchor");
             SetAnimatorState(crouch: true, crawl: true);
             yield return StartCoroutine(MoveTowardsTarget(_activeCoverSpot.HideAnchor.position));
 
-            // ── Step 3: Settle back to Crouch Idle ──
             if (debugMode) Debug.Log("[PlayerCoverController] Step 3 – Settling to Crouch Idle");
             SetAnimatorState(crouch: true, crawl: false);
             yield return new WaitForSeconds(animBlendTime);
 
-            // ── Step 4: Turn to match hideAnchor facing direction ──
             float targetYaw = _activeCoverSpot.HiddenFacingYaw;
             if (debugMode) Debug.Log($"[PlayerCoverController] Step 4 – Turning to yaw {targetYaw:F1}°");
             yield return StartCoroutine(TurnTowardsYaw(targetYaw));
 
-            // Set up constrained look while hidden
             playerLook?.SetYaw(targetYaw);
             playerLook?.EnableHorizontalClamp(targetYaw, _activeCoverSpot.MaxLookYaw);
             playerLook?.SetVerticalLimits(_activeCoverSpot.MaxLookUp, _activeCoverSpot.MaxLookDown);
@@ -227,53 +205,39 @@ namespace ShakySurvival.Cover
             if (debugMode) Debug.Log("[PlayerCoverController] State -> Hidden");
         }
 
-        // ──────────────────────────────────────────────
-        // Exit Sequence (4 steps)
-        // ──────────────────────────────────────────────
-
         private IEnumerator ExitCoverRoutine()
         {
             _currentState = CoverState.Exiting;
             if (debugMode) Debug.Log("[PlayerCoverController] State -> Exiting");
 
-            // Lock look during exit
             playerLook?.LockLook();
             playerLook?.DisableHorizontalClamp();
 
-            // ── Step 1: Blend into Crawling ──
             if (debugMode) Debug.Log("[PlayerCoverController] Step 1 – Blending to Crawling");
             SetAnimatorState(crouch: true, crawl: true);
             yield return new WaitForSeconds(animBlendTime);
 
-            // ── Step 2: Crawl toward exitPoint.position ──
             if (debugMode) Debug.Log("[PlayerCoverController] Step 2 – Crawling to ExitPoint");
             yield return StartCoroutine(MoveTowardsTarget(_activeCoverSpot.ExitPoint.position));
 
-            // ── Step 3: Settle back to Crouch Idle ──
             if (debugMode) Debug.Log("[PlayerCoverController] Step 3 – Settling to Crouch Idle");
             SetAnimatorState(crouch: true, crawl: false);
             yield return new WaitForSeconds(animBlendTime);
 
-            // ── Step 4: Return to standing Idle ──
             if (debugMode) Debug.Log("[PlayerCoverController] Step 4 – Returning to Standing Idle");
             SetAnimatorState(crouch: false, crawl: false);
 
-            // Restore collider dimensions
             RestoreCollider();
 
-            // Restore camera shake
             if (cameraShaker != null) cameraShaker.ShakeMultiplier = 1f;
             if (playerStagger != null) playerStagger.IsImmune = false;
 
-            // Restore default look limits and sync yaw to exit direction
             playerLook?.SetVerticalLimits(80f, 80f);
             playerLook?.SetYaw(_activeCoverSpot.ExitPoint.eulerAngles.y);
 
-            // Unlock controls
             playerMovement?.UnlockInput();
             playerLook?.UnlockLook();
 
-            // Release the cover spot.
             if (_activeCoverSpot != null)
                 _activeCoverSpot.Release(gameObject);
 
@@ -283,37 +247,40 @@ namespace ShakySurvival.Cover
             if (debugMode) Debug.Log("[PlayerCoverController] State -> Idle");
         }
 
-        // ──────────────────────────────────────────────
-        // Movement & Rotation Helpers
-        // ──────────────────────────────────────────────
-
-        /// <summary>
-        /// Moves the player toward <paramref name="targetPos"/> at <see cref="crawlSpeed"/> using
-        /// CharacterController.Move(), snapping Y to the ground each frame.
-        /// </summary>
         private IEnumerator MoveTowardsTarget(Vector3 targetPos)
         {
-            // Pre-snap the target Y to the actual floor beneath it
             targetPos.y = SnapYToGround(targetPos);
+
+            float timer = 0f;
 
             while (true)
             {
+                timer += Time.deltaTime;
+
                 Vector3 currentPos = transform.position;
                 Vector3 toTarget = targetPos - currentPos;
-
-                // Only care about horizontal distance for arrival check
                 Vector3 horizontalDelta = new Vector3(toTarget.x, 0f, toTarget.z);
-                if (horizontalDelta.sqrMagnitude <= 0.01f) break;
 
-                // Desired horizontal step this frame
+                if (debugMode)
+                {
+                    Debug.Log($"[PlayerCoverController] Distance to target: {horizontalDelta.magnitude:F3}");
+                }
+
+                if (horizontalDelta.sqrMagnitude <= arrivalThreshold * arrivalThreshold)
+                    break;
+
+                if (timer >= maxCrawlTime)
+                {
+                    Debug.LogWarning("[PlayerCoverController] MoveTowardsTarget timed out. Forcing stop.");
+                    break;
+                }
+
                 float step = crawlSpeed * Time.deltaTime;
                 Vector3 moveDir = horizontalDelta.normalized * Mathf.Min(step, horizontalDelta.magnitude);
 
-                // Ground-snap: find true floor height at the next position
                 Vector3 nextHorizontalPos = currentPos + moveDir;
                 float groundY = SnapYToGround(nextHorizontalPos);
 
-                // Compute the full delta including vertical correction
                 float verticalDelta = groundY - currentPos.y;
                 Vector3 moveDelta = new Vector3(moveDir.x, verticalDelta, moveDir.z);
 
@@ -321,7 +288,6 @@ namespace ShakySurvival.Cover
                 yield return null;
             }
 
-            // Final snap to exact position
             Vector3 finalSnap = targetPos - transform.position;
             if (finalSnap.sqrMagnitude > 0.0001f)
             {
@@ -329,9 +295,6 @@ namespace ShakySurvival.Cover
             }
         }
 
-        /// <summary>
-        /// Smoothly rotates the player's Y-axis toward <paramref name="targetYaw"/> at <see cref="turnSpeed"/> deg/sec.
-        /// </summary>
         private IEnumerator TurnTowardsYaw(float targetYaw)
         {
             Quaternion targetRot = Quaternion.Euler(0f, targetYaw, 0f);
@@ -346,10 +309,6 @@ namespace ShakySurvival.Cover
             transform.rotation = targetRot;
         }
 
-        /// <summary>
-        /// Casts a ray downward from above <paramref name="pos"/> and returns the ground-snapped Y.
-        /// Falls back to the original Y if no ground is hit.
-        /// </summary>
         private float SnapYToGround(Vector3 pos)
         {
             Vector3 origin = new Vector3(pos.x, pos.y + groundRayOriginHeight, pos.z);
@@ -362,10 +321,6 @@ namespace ShakySurvival.Cover
             if (debugMode) Debug.LogWarning($"[PlayerCoverController] Ground raycast missed at {pos}. Using original Y.");
             return pos.y;
         }
-
-        // ──────────────────────────────────────────────
-        // Collider Helpers
-        // ──────────────────────────────────────────────
 
         private void SaveAndShrinkCollider()
         {
@@ -398,15 +353,17 @@ namespace ShakySurvival.Cover
             if (debugMode) Debug.Log("[PlayerCoverController] Collider restored.");
         }
 
-        // ──────────────────────────────────────────────
-        // Animator Helper
-        // ──────────────────────────────────────────────
-
         private void SetAnimatorState(bool crouch, bool crawl)
         {
             if (animator == null) return;
+
             animator.SetBool(_crouchHash, crouch);
             animator.SetBool(_coverCrawlHash, crawl);
+
+            if (debugMode)
+            {
+                Debug.Log($"[PlayerCoverController] Animator state set -> Crouch: {crouch}, CoverCrawl: {crawl}");
+            }
         }
     }
 }
