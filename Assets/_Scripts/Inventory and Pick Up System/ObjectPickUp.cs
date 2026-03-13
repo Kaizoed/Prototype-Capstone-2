@@ -18,14 +18,9 @@ public class ObjectPickUp : MonoBehaviour, IInteractable
 
     public bool CanInteract(GameObject interactor)
     {
-        if (item == null)
-            return false;
-
-        if (Inventory.instance == null)
-            return false;
-
-        if (Inventory.instance.items.Count >= Inventory.instance.inventorySize)
-            return false;
+        if (item == null) return false;
+        if (Inventory.instance == null) return false;
+        if (Inventory.instance.items.Count >= Inventory.instance.inventorySize) return false;
 
         return true;
     }
@@ -44,13 +39,11 @@ public class ObjectPickUp : MonoBehaviour, IInteractable
             return;
         }
 
-        if (Inventory.instance.items.Count >= Inventory.instance.inventorySize)
-        {
-            Debug.Log("Inventory Full!");
-            return;
-        }
+        bool added = Inventory.instance.AddItem(item);
 
-        Inventory.instance.AddItem(item);
-        Destroy(gameObject);
+        if (added)
+        {
+            Destroy(gameObject);
+        }
     }
 }

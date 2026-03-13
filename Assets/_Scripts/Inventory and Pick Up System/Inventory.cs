@@ -8,7 +8,9 @@ public class Inventory : MonoBehaviour
     public List<Item> items = new List<Item>();
     public int inventorySize = 20;
 
-    void Awake()
+    private InventoryUI inventoryUI;
+
+    private void Awake()
     {
         if (instance == null)
         {
@@ -20,15 +22,25 @@ public class Inventory : MonoBehaviour
         }
     }
 
-    public void AddItem(Item item)
+    private void Start()
+    {
+        inventoryUI = FindFirstObjectByType<InventoryUI>();
+    }
+
+    public bool AddItem(Item item)
     {
         if (items.Count >= inventorySize)
         {
             Debug.Log("Inventory Full!");
-            return;
+            return false;
         }
 
         items.Add(item);
         Debug.Log(item.itemName + " added to inventory.");
+
+        if (inventoryUI != null)
+            inventoryUI.RefreshInventoryUI();
+
+        return true;
     }
 }
