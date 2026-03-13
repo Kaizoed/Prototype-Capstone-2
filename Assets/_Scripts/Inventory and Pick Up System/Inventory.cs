@@ -14,6 +14,10 @@ public class Inventory : MonoBehaviour
         {
             instance = this;
         }
+        else if (instance != this)
+        {
+            Destroy(gameObject);
+        }
     }
 
     public void AddItem(Item item)

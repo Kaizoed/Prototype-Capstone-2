@@ -1,39 +1,56 @@
 using UnityEngine;
+using ShakySurvival.Interactions;
 
-public class ObjectPickUp : MonoBehaviour
+public class ObjectPickUp : MonoBehaviour, IInteractable
 {
-    public Item item;
+    [SerializeField] private Item item;
+    [SerializeField] private string pickupPrompt = "Pick up";
 
-    private bool playerInRange = false;
-
-    void Update()
+    public string InteractionPrompt
     {
-        if (playerInRange && Input.GetKeyDown(KeyCode.F))
+        get
         {
-            Pickup();
+            if (item != null)
+                return $"{pickupPrompt} {item.itemName}";
+            return pickupPrompt;
         }
     }
 
-    void Pickup()
+    public bool CanInteract(GameObject interactor)
     {
+        if (item == null)
+            return false;
+
+        if (Inventory.instance == null)
+            return false;
+
+        if (Inventory.instance.items.Count >= Inventory.instance.inventorySize)
+            return false;
+
+        return true;
+    }
+
+    public void Interact(GameObject interactor)
+    {
+        if (item == null)
+        {
+            Debug.LogWarning("[ObjectPickUp] No item assigned.");
+            return;
+        }
+
+        if (Inventory.instance == null)
+        {
+            Debug.LogWarning("[ObjectPickUp] Inventory instance not found.");
+            return;
+        }
+
+        if (Inventory.instance.items.Count >= Inventory.instance.inventorySize)
+        {
+            Debug.Log("Inventory Full!");
+            return;
+        }
+
         Inventory.instance.AddItem(item);
         Destroy(gameObject);
-    }
-
-    void OnTriggerEnter(Collider other)
-    {
-        if (other.CompareTag("Player"))
-        {
-            playerInRange = true;
-            Debug.Log("Press F to pick up " + item.itemName);
-        }
-    }
-
-    void OnTriggerExit(Collider other)
-    {
-        if (other.CompareTag("Player"))
-        {
-            playerInRange = false;
-        }
     }
 }

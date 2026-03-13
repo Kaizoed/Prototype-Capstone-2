@@ -1,19 +1,18 @@
 using UnityEngine;
+using System;
+using ShakySurvival.Interactions;
 
 namespace ShakySurvival.Interactions
 {
-    // component responsible for detecting interactable objects in the world.
-    // Uses a raycast from the camera/eyes center.
     public class InteractionDetector : MonoBehaviour
     {
         [Header("Detection Settings")]
         [SerializeField] private float detectionRange = 3.0f;
         [SerializeField] private LayerMask interactableLayer;
-        [SerializeField] private Transform detectionOrigin; // Usually the Camera
+        [SerializeField] private Transform detectionOrigin;
 
         private IInteractable _currentInteractable;
 
-        // The currently detected interactable, if any.
         public IInteractable CurrentInteractable => _currentInteractable;
 
         private void Update()
@@ -23,34 +22,37 @@ namespace ShakySurvival.Interactions
 
         private void DetectInteractable()
         {
-            if (detectionOrigin == null) return;
-
-            Ray ray = new Ray(detectionOrigin.position, detectionOrigin.forward);
-            RaycastHit hit;
-
-            // Perform raycast
-            if (Physics.Raycast(ray, out hit, detectionRange, interactableLayer))
-            {
-                // Check if the object has an IInteractable component
-                IInteractable interactable = hit.collider.GetComponent<IInteractable>();
-                
-                if (interactable == null)
-                {
-                    interactable = hit.collider.GetComponentInParent<IInteractable>();
-                }
-
-                if (interactable != null && interactable != _currentInteractable)
-                {
-                    _currentInteractable = interactable;
-                }
-                else if (interactable == null)
-                {
-                    _currentInteractable = null;
-                }
-            }
-            else
+            if (detectionOrigin == null)
             {
                 _currentInteractable = null;
+                return;
+            }
+
+            Ray ray = new Ray(detectionOrigin.position, detectionOrigin.forward);
+            RaycastHit[] hits = Physics.RaycastAll(ray, detectionRange, interactableLayer, QueryTriggerInteraction.Collide);
+
+            if (hits.Length == 0)
+            {
+                _currentInteractable = null;
+                return;
+            }
+
+            Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+
+            _currentInteractable = null;
+
+            foreach (RaycastHit hit in hits)
+            {
+                IInteractable interactable = hit.collider.GetComponent<IInteractable>();
+
+                if (interactable == null)
+                    interactable = hit.collider.GetComponentInParent<IInteractable>();
+
+                if (interactable != null && interactable.CanInteract(gameObject))
+                {
+                    _currentInteractable = interactable;
+                    return;
+                }
             }
         }
 
