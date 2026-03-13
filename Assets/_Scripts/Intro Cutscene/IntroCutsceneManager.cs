@@ -38,6 +38,9 @@ public class IntroCutsceneManager : MonoBehaviour
     [Header("Tutorial")]
     [SerializeField] private TutorialManager tutorialManager;
 
+    [Header("Classroom NPCs")]
+    [SerializeField] private ClassroomNPCManager classroomNPCManager;
+
     private void Start()
     {
         StartCoroutine(PlayIntroScene());
@@ -115,6 +118,11 @@ public class IntroCutsceneManager : MonoBehaviour
         else
         {
             Debug.LogWarning("[IntroCutsceneManager] tutorialManager is NULL");
+        }
+
+        if (classroomNPCManager != null)
+        {
+            classroomNPCManager.EndIntroForAllNPCs();
         }
     }
 

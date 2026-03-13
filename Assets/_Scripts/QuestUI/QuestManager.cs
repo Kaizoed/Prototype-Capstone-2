@@ -35,6 +35,16 @@ public class QuestManager : MonoBehaviour
 
     private void Start()
     {
+        Debug.Log("Quest steps count: " + (steps != null ? steps.Length : 0));
+
+        if (steps != null)
+        {
+            for (int i = 0; i < steps.Length; i++)
+            {
+                Debug.Log("Quest Step " + i + ": " + steps[i].id);
+            }
+        }
+
         RefreshUI();
     }
 
@@ -58,10 +68,20 @@ public class QuestManager : MonoBehaviour
         RefreshUI();
     }
 
-    public void SetSteps(Step[] newSteps, int startIndex = 0)
+    public void ForceSetCurrentStep(string id)
     {
-        steps = newSteps;
-        currentIndex = Mathf.Clamp(startIndex, 0, steps.Length > 0 ? steps.Length - 1 : 0);
-        RefreshUI();
+        if (steps == null || steps.Length == 0) return;
+
+        for (int i = 0; i < steps.Length; i++)
+        {
+            if (steps[i].id == id)
+            {
+                currentIndex = i;
+                RefreshUI();
+                return;
+            }
+        }
+
+        Debug.LogWarning("Quest step not found: " + id);
     }
 }

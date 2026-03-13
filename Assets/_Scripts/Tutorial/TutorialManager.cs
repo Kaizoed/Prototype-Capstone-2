@@ -19,9 +19,6 @@ public class TutorialManager : MonoBehaviour
     [SerializeField] private EarthquakeManager earthquakeManager;
     [SerializeField] private float earthquakeDelayAfterTutorial = 2f;
 
-    [Header("Earthquake Objectives")]
-    [SerializeField] private QuestManager.Step[] earthquakeQuestSteps;
-
     private int stepIndex = 0;
     private bool waitingForKey = false;
 
@@ -69,15 +66,20 @@ public class TutorialManager : MonoBehaviour
 
         Time.timeScale = 0f;
 
-        tutorialPanel.SetActive(true);
-        tutorialText.text = steps[stepIndex].instruction;
+        if (tutorialPanel != null)
+            tutorialPanel.SetActive(true);
+
+        if (tutorialText != null)
+            tutorialText.text = steps[stepIndex].instruction;
 
         waitingForKey = true;
     }
 
     IEnumerator AdvanceRoutine()
     {
-        tutorialPanel.SetActive(false);
+        if (tutorialPanel != null)
+            tutorialPanel.SetActive(false);
+
         Time.timeScale = 1f;
 
         float playTime = steps[stepIndex].playSecondsAfterPress;
@@ -96,21 +98,14 @@ public class TutorialManager : MonoBehaviour
         if (next >= steps.Length)
         {
             Time.timeScale = 1f;
-            tutorialPanel.SetActive(false);
+
+            if (tutorialPanel != null)
+                tutorialPanel.SetActive(false);
 
             yield return new WaitForSecondsRealtime(earthquakeDelayAfterTutorial);
 
             if (questPanel != null)
                 questPanel.SetActive(true);
-
-            if (QuestManager.Instance != null)
-            {
-                QuestManager.Instance.SetSteps(earthquakeQuestSteps, 0);
-            }
-            else
-            {
-                Debug.LogWarning("QuestManager.Instance is null.");
-            }
 
             if (earthquakeManager != null)
             {

@@ -6,8 +6,11 @@ public class DoorInteractable : MonoBehaviour, IInteractable
     [Header("Door Pivot")]
     [SerializeField] private Transform doorPivot;
 
+    [Header("Side Detection Reference")]
+    [SerializeField] private Transform sideCheckTransform;
+
     [Header("Door Settings")]
-    [SerializeField] private float openAngle = -90f;
+    [SerializeField] private float openAngle = 90f;
     [SerializeField] private float openSpeed = 4f;
 
     [Header("Prompt Text")]
@@ -44,16 +47,20 @@ public class DoorInteractable : MonoBehaviour, IInteractable
             return;
         }
 
+        if (sideCheckTransform == null)
+            sideCheckTransform = transform;
+
         closedRotation = doorPivot.localRotation;
-        openRotation = closedRotation * Quaternion.Euler(0f, openAngle, 0f);
+        openRotation = closedRotation;
     }
 
     private void Update()
     {
-        Quaternion target = isOpen ? openRotation : closedRotation;
+        Quaternion targetRotation = isOpen ? openRotation : closedRotation;
+
         doorPivot.localRotation = Quaternion.Slerp(
             doorPivot.localRotation,
-            target,
+            targetRotation,
             Time.deltaTime * openSpeed
         );
     }
@@ -71,7 +78,64 @@ public class DoorInteractable : MonoBehaviour, IInteractable
             return;
         }
 
-        isOpen = !isOpen;
+        if (!isOpen)
+        {
+            SetOpenDirection(interactor);
+            isOpen = true;
+        }
+        else
+        {
+            CloseDoor();
+        }
+    }
+
+    public void OpenDoorFrom(GameObject opener)
+    {
+        if (IsLocked()) return;
+        if (isOpen) return;
+
+        SetOpenDirection(opener);
+        isOpen = true;
+    }
+
+    public void OpenDoorForward()
+    {
+        if (IsLocked()) return;
+        if (isOpen) return;
+
+        openRotation = closedRotation * Quaternion.Euler(0f, openAngle, 0f);
+        isOpen = true;
+    }
+
+    public void OpenDoorBackward()
+    {
+        if (IsLocked()) return;
+        if (isOpen) return;
+
+        openRotation = closedRotation * Quaternion.Euler(0f, -openAngle, 0f);
+        isOpen = true;
+    }
+
+    public void CloseDoor()
+    {
+        isOpen = false;
+    }
+
+    private void SetOpenDirection(GameObject opener)
+    {
+        if (opener == null)
+        {
+            openRotation = closedRotation * Quaternion.Euler(0f, openAngle, 0f);
+            return;
+        }
+
+        Vector3 toOpener = opener.transform.position - sideCheckTransform.position;
+
+        float dot = Vector3.Dot(sideCheckTransform.forward, toOpener);
+
+        float finalAngle = dot >= 0f ? openAngle : -openAngle;
+
+        openRotation = closedRotation * Quaternion.Euler(0f, finalAngle, 0f);
     }
 
     private bool IsLocked()
@@ -85,7 +149,6 @@ public class DoorInteractable : MonoBehaviour, IInteractable
         if (QuestManager.Instance == null)
             return true;
 
-        // Unlock permanently once this quest step becomes current
         if (QuestManager.Instance.CurrentStepId == requiredQuestStepId)
         {
             hasBeenUnlocked = true;
