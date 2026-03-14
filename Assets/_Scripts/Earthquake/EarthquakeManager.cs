@@ -166,6 +166,20 @@ namespace ShakySurvival.Earthquake
             StartEarthquake(mag, earthquakeDuration, intensityCurve, forceOverrideCurve);
         }
 
+        /// <summary>
+        /// Starts an earthquake for the experimentation zone.
+        /// Higher magnitudes last longer.
+        /// </summary>
+        public void StartEarthquakeFromExperiment(float mag)
+        {
+            float clampedMag = Mathf.Clamp(mag, MagnitudePhysics.MIN_MAGNITUDE, MagnitudePhysics.MAX_MAGNITUDE);
+
+            // Magnitude 3 = 10 seconds, Magnitude 9 = 40 seconds
+            float scaledDuration = Mathf.Lerp(10f, 40f, Mathf.InverseLerp(3f, 9f, clampedMag));
+
+            StartEarthquake(clampedMag, scaledDuration, intensityCurve, forceOverrideCurve);
+        }
+
         /// <summary>Start using a MagnitudeSettings preset asset.</summary>
         public void StartEarthquake(MagnitudeSettings settings)
         {
@@ -179,8 +193,13 @@ namespace ShakySurvival.Earthquake
 
         /// <summary>Full control: magnitude, duration, curves.</summary>
         public void StartEarthquake(float mag, float duration,
-            AnimationCurve envelope = null, AnimationCurve forceOverride = null)
+        AnimationCurve envelope = null, AnimationCurve forceOverride = null)
         {
+            if (IsActive)
+            {
+                StopEarthquake();
+            }
+
             _activeMagnitude = Mathf.Clamp(mag, MagnitudePhysics.MIN_MAGNITUDE, MagnitudePhysics.MAX_MAGNITUDE);
             _activeDuration = Mathf.Max(1f, duration);
             _activeIntensityCurve = envelope ?? AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);

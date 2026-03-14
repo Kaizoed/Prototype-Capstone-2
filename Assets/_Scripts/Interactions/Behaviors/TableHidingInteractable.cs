@@ -1,5 +1,6 @@
 using UnityEngine;
 using ShakySurvival.Cover;
+using ShakySurvival.Earthquake;
 
 namespace ShakySurvival.Interactions.Behaviors
 {
@@ -15,27 +16,31 @@ namespace ShakySurvival.Interactions.Behaviors
         [SerializeField] private string exitPrompt = "Exit";
 
         [Header("Quest")]
-        [SerializeField] private string hideDeskQuestId = "HideUnderDesk";
+        [SerializeField] private string hideDeskQuestId = "hide_under_desk";
         [SerializeField] private bool completeQuestOnHide = true;
 
         private PlayerCoverController _playerController;
         private bool _questCompleted;
+        private bool _earthquakeActive;
 
         public string InteractionPrompt
         {
             get
             {
+                if (!_earthquakeActive)
+                    return string.Empty;
+
                 if (_playerController != null && _playerController.CurrentState == CoverState.Hidden)
                 {
                     return exitPrompt;
                 }
+
                 return hidePrompt;
             }
         }
 
         private void Awake()
         {
-            // Try to find CoverSpot if not assigned
             if (coverSpot == null)
             {
                 coverSpot = GetComponentInChildren<CoverSpot>();
@@ -46,8 +51,33 @@ namespace ShakySurvival.Interactions.Behaviors
             }
         }
 
+        private void OnEnable()
+        {
+            EarthquakeEvents.OnEarthquakeStart += HandleEarthquakeStart;
+            EarthquakeEvents.OnEarthquakeStop += HandleEarthquakeStop;
+        }
+
+        private void OnDisable()
+        {
+            EarthquakeEvents.OnEarthquakeStart -= HandleEarthquakeStart;
+            EarthquakeEvents.OnEarthquakeStop -= HandleEarthquakeStop;
+        }
+
+        private void HandleEarthquakeStart()
+        {
+            _earthquakeActive = true;
+        }
+
+        private void HandleEarthquakeStop()
+        {
+            _earthquakeActive = false;
+        }
+
         public bool CanInteract(GameObject interactor)
         {
+            if (!_earthquakeActive)
+                return false;
+
             if (_playerController == null)
             {
                 _playerController = interactor.GetComponent<PlayerCoverController>();
@@ -59,18 +89,15 @@ namespace ShakySurvival.Interactions.Behaviors
                 return false;
             }
 
-            // Check if player can interact based on their current state
             if (!_playerController.CanInteract)
             {
                 return false;
             }
 
-            // If player is Idle, check approach angle and occupancy
             if (_playerController.CurrentState == CoverState.Idle)
             {
                 if (coverSpot == null) return false;
 
-                // Block if already occupied by an NPC
                 if (coverSpot.IsOccupied && coverSpot.Occupant != interactor)
                 {
                     return false;
@@ -79,7 +106,6 @@ namespace ShakySurvival.Interactions.Behaviors
                 return coverSpot.IsValidApproach(interactor.transform);
             }
 
-            // If player is Hidden (in this cover), they can exit
             if (_playerController.CurrentState == CoverState.Hidden)
             {
                 return true;
@@ -97,7 +123,6 @@ namespace ShakySurvival.Interactions.Behaviors
 
             if (_playerController == null) return;
 
-            // Toggle based on current state
             if (_playerController.CurrentState == CoverState.Idle)
             {
                 bool enteredCover = _playerController.EnterCover(coverSpot);

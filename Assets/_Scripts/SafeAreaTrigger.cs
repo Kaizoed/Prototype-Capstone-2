@@ -1,9 +1,14 @@
 using UnityEngine;
+using ShakySurvival.Player;
 
 public class SafeAreaTrigger : MonoBehaviour
 {
     [SerializeField] private string requiredQuestStepId = "reach_safe_area";
     [SerializeField] private GameObject endGamePanel;
+
+    [Header("Player Control")]
+    [SerializeField] private MonoBehaviour playerMovementScript;
+    [SerializeField] private PlayerLook playerLookScript;
 
     private bool triggered = false;
 
@@ -19,6 +24,18 @@ public class SafeAreaTrigger : MonoBehaviour
 
         QuestManager.Instance.CompleteStep(requiredQuestStepId);
 
+        // Disable player controls
+        if (playerMovementScript != null)
+            playerMovementScript.enabled = false;
+
+        if (playerLookScript != null)
+            playerLookScript.enabled = false;
+
+        // Unlock cursor
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
+        // Show ending screen
         if (endGamePanel != null)
             endGamePanel.SetActive(true);
 

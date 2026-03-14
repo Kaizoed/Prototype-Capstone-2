@@ -1,43 +1,39 @@
 using UnityEngine;
-using UnityEngine. SceneManagement;
+using UnityEngine.SceneManagement;
 
 public class MainMenu : MonoBehaviour
 {
     public string mainLevel;
-    //public string loadGame;
-    //public string tutorial;
-    //public string settings;
-    //public string closeSettings;
-
-    /*Paano gamitin?
-    1. iattach ang name ng scene(dapat same ang name sa folder) sa script(nakalagay sa canvas)
-    2. ayusin sa functions
-    
-    kung may kulang or revision pakilagay  na lng*/
+    public string experimentZone;   // NEW
 
     public void OpenStartGame()
     {
-         SceneManager.LoadScene(mainLevel);
+        SceneManager.LoadScene(mainLevel);
+    }
+
+    public void OpenExperimentZone()   // NEW
+    {
+        SceneManager.LoadScene(experimentZone);
     }
 
     public void OpenLoadGame()
     {
-        
+
     }
 
     public void OpenTutorial()
     {
-        
+
     }
 
     public void OpenSettings()
     {
-        
+
     }
 
     public void CloseSettings()
     {
-        
+
     }
 
     public void QuitGame()
