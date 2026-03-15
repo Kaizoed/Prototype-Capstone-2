@@ -7,6 +7,9 @@ public class HelpFallenNPC : MonoBehaviour, IInteractable
     [SerializeField] private NPCEarthquakeReaction npcReaction;
     [SerializeField] private string helpQuestStepId = "help_fallen_npc";
 
+    [Header("Safe Area Marker")]
+    [SerializeField] private GameObject safeAreaMarker;
+
     private bool hasBeenHelped = false;
 
     public string InteractionPrompt => hasBeenHelped ? "" : helpPrompt;
@@ -15,6 +18,9 @@ public class HelpFallenNPC : MonoBehaviour, IInteractable
     {
         if (npcReaction == null)
             npcReaction = GetComponent<NPCEarthquakeReaction>();
+
+        if (safeAreaMarker != null)
+            safeAreaMarker.SetActive(false);
     }
 
     public bool CanInteract(GameObject interactor)
@@ -38,6 +44,11 @@ public class HelpFallenNPC : MonoBehaviour, IInteractable
         if (QuestManager.Instance != null)
         {
             QuestManager.Instance.CompleteStep(helpQuestStepId);
+        }
+
+        if (safeAreaMarker != null)
+        {
+            safeAreaMarker.SetActive(true);
         }
 
         Debug.Log("Student helped up.");
