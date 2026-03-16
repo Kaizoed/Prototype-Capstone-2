@@ -1,7 +1,6 @@
 using UnityEngine;
 using TMPro;
 using System.Collections;
-using ShakySurvival.Earthquake;
 
 public class TutorialManager : MonoBehaviour
 {
@@ -14,10 +13,6 @@ public class TutorialManager : MonoBehaviour
 
     [Header("Objectives")]
     [SerializeField] private GameObject questPanel;
-
-    [Header("Earthquake")]
-    [SerializeField] private EarthquakeManager earthquakeManager;
-    [SerializeField] private float earthquakeDelayAfterTutorial = 2f;
 
     private int stepIndex = 0;
     private bool waitingForKey = false;
@@ -102,19 +97,8 @@ public class TutorialManager : MonoBehaviour
             if (tutorialPanel != null)
                 tutorialPanel.SetActive(false);
 
-            yield return new WaitForSecondsRealtime(earthquakeDelayAfterTutorial);
-
             if (questPanel != null)
                 questPanel.SetActive(true);
-
-            if (earthquakeManager != null)
-            {
-                earthquakeManager.StartEarthquake();
-            }
-            else
-            {
-                Debug.LogWarning("EarthquakeManager is not assigned.");
-            }
 
             yield break;
         }

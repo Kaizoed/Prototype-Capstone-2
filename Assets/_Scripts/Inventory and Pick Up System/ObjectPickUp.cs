@@ -6,6 +6,10 @@ public class ObjectPickUp : MonoBehaviour, IInteractable
     [SerializeField] private Item item;
     [SerializeField] private string pickupPrompt = "Pick up";
 
+    [Header("Quest Progress")]
+    [SerializeField] private bool countsForQuest = false;
+    [SerializeField] private string questStepId;
+
     public string InteractionPrompt
     {
         get
@@ -43,6 +47,11 @@ public class ObjectPickUp : MonoBehaviour, IInteractable
 
         if (added)
         {
+            if (countsForQuest && QuestManager.Instance != null)
+            {
+                QuestManager.Instance.AddStepProgress(questStepId, 1);
+            }
+
             Destroy(gameObject);
         }
     }

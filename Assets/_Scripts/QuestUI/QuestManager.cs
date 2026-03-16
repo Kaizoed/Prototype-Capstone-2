@@ -1,4 +1,6 @@
 using UnityEngine;
+using System.Collections;
+using ShakySurvival.Earthquake;
 
 public class QuestManager : MonoBehaviour
 {
@@ -9,12 +11,24 @@ public class QuestManager : MonoBehaviour
     {
         public string id;
         [TextArea] public string text;
+
+        [Header("Optional Counter Objective")]
+        public bool useCounter;
+        public int requiredCount = 1;
+
+        [HideInInspector] public int currentCount = 0;
     }
 
     [SerializeField] private QuestUI_FixedList ui;
     [SerializeField] private Step[] steps;
 
+    [Header("Earthquake Trigger")]
+    [SerializeField] private string earthquakeTriggerStepId = "collect_items";
+    [SerializeField] private float earthquakeDelay = 3f;
+    [SerializeField] private EarthquakeManager earthquakeManager;
+
     private int currentIndex = 0;
+    private bool waitingForEarthquake = false;
 
     public int CurrentIndex => currentIndex;
 
@@ -35,13 +49,12 @@ public class QuestManager : MonoBehaviour
 
     private void Start()
     {
-        Debug.Log("Quest steps count: " + (steps != null ? steps.Length : 0));
-
         if (steps != null)
         {
             for (int i = 0; i < steps.Length; i++)
             {
-                Debug.Log("Quest Step " + i + ": " + steps[i].id);
+                if (steps[i].useCounter)
+                    steps[i].currentCount = 0;
             }
         }
 
@@ -53,8 +66,14 @@ public class QuestManager : MonoBehaviour
         if (ui == null || steps == null) return;
 
         string[] texts = new string[steps.Length];
+
         for (int i = 0; i < steps.Length; i++)
-            texts[i] = steps[i].text;
+        {
+            if (steps[i].useCounter)
+                texts[i] = $"{steps[i].text} ({steps[i].currentCount}/{steps[i].requiredCount})";
+            else
+                texts[i] = steps[i].text;
+        }
 
         ui.SetSteps(texts, currentIndex);
     }
@@ -66,6 +85,55 @@ public class QuestManager : MonoBehaviour
 
         currentIndex++;
         RefreshUI();
+    }
+
+    public void AddStepProgress(string id, int amount = 1)
+    {
+        if (steps == null || currentIndex >= steps.Length) return;
+        if (waitingForEarthquake) return;
+
+        Step currentStep = steps[currentIndex];
+
+        if (currentStep.id != id) return;
+        if (!currentStep.useCounter) return;
+
+        currentStep.currentCount += amount;
+
+        if (currentStep.currentCount > currentStep.requiredCount)
+            currentStep.currentCount = currentStep.requiredCount;
+
+        RefreshUI();
+
+        if (currentStep.currentCount >= currentStep.requiredCount)
+        {
+            if (currentStep.id == earthquakeTriggerStepId)
+            {
+                StartCoroutine(CompleteStepAfterEarthquakeDelay(currentStep.id));
+            }
+            else
+            {
+                CompleteStep(currentStep.id);
+            }
+        }
+    }
+
+    private IEnumerator CompleteStepAfterEarthquakeDelay(string stepId)
+    {
+        waitingForEarthquake = true;
+
+        yield return new WaitForSeconds(earthquakeDelay);
+
+        if (earthquakeManager != null)
+        {
+            earthquakeManager.StartEarthquake();
+        }
+        else
+        {
+            Debug.LogWarning("[QuestManager] EarthquakeManager is not assigned.");
+        }
+
+        CompleteStep(stepId);
+        waitingForEarthquake = false;
     }
 
     public void ForceSetCurrentStep(string id)
