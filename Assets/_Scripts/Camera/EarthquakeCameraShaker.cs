@@ -2,6 +2,7 @@ using UnityEngine;
 using Unity.Cinemachine;
 using ShakySurvival.Earthquake;
 using ShakySurvival.Player;
+using PlayerMovement = ShakySurvival.Player.PlayerMovement;
 
 namespace ShakySurvival.Camera
 {

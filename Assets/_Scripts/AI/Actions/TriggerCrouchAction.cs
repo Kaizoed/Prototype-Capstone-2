@@ -26,7 +26,7 @@ namespace ShakySurvival.AI
         description: "Crouches and crawls the NPC under a table to the HideAnchor position.",
         story: "[Agent] crouches under the table",
         category: "Action/Earthquake",
-        id: "ea1c0005000000000000000000000001")]
+        id: "ea1c0012000000000000000000000001")]
     public partial class TriggerCrouchAction : Action
     {
         // ── Blackboard Variables ─────────────────────────────────

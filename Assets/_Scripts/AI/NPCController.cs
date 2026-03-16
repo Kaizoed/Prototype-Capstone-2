@@ -166,5 +166,42 @@ namespace ShakySurvival.AI
                 m_NavAgent.isStopped = true;
             }
         }
+
+        // ─────────────────────────────────────────────────────────
+        // IK Rig Integration
+        // ─────────────────────────────────────────────────────────
+
+        [Header("IK Rig")]
+        [Tooltip("Reference to the NPCIKRigController. " +
+                 "If assigned, crouch state is forwarded automatically.")]
+        [SerializeField] private NPCIKRigController ikRigController;
+
+        // ─────────────────────────────────────────────────────────
+        // Animator Helpers
+        // ─────────────────────────────────────────────────────────
+
+        private static readonly int s_CrouchHash = Animator.StringToHash("Crouch");
+
+        /// <summary>
+        /// Sets the "Crouch" Animator bool. Call with true to make the
+        /// NPC crouch, false to return to standing.
+        /// Also forwards the state to <see cref="NPCIKRigController"/>
+        /// if one is assigned.
+        /// </summary>
+        public void SetCrouch(bool crouch)
+        {
+            Animator anim = GetComponentInChildren<Animator>();
+            if (anim != null)
+            {
+                anim.SetBool(s_CrouchHash, crouch);
+                if (m_NavAgent != null) m_NavAgent.isStopped = crouch;
+
+                Debug.Log($"[NPCController] {gameObject.name} Crouch = {crouch}");
+            }
+
+            // Forward to IK rig so hands-on-head weight stays in sync.
+            if (ikRigController != null)
+                ikRigController.SetCrouchState(crouch);
+        }
     }
 }

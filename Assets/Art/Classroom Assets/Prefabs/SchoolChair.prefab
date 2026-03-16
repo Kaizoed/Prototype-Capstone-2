@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 7994300107221449591}
   - component: {fileID: 3179243977809106747}
   - component: {fileID: 922717315498896188}
-  - component: {fileID: 7973477643880760628}
+  - component: {fileID: 9216582460444857012}
   m_Layer: 0
   m_Name: SchoolChair
   m_TagString: Untagged
@@ -32,7 +32,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 2.2264237, y: 2.2264235, z: 2.2264237}
+  m_LocalScale: {x: 2.2264242, y: 2.2264235, z: 2.2264242}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -109,8 +109,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.5222553, y: 1.1105554, z: 0.5540227}
-  m_Center: {x: 0, y: 0.5552776, z: 0.0000038146973}
+  m_Size: {x: 0.5222553, y: 0.5037034, z: 0.5540227}
+  m_Center: {x: 4.9448062e-14, y: 0.25185162, z: 0.0000038015496}
 --- !u!54 &3179243977809106747
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -148,13 +148,13 @@ NavMeshObstacle:
   m_Enabled: 1
   serializedVersion: 3
   m_Shape: 1
-  m_Extents: {x: 0.261, y: 0.555, z: 0.00001}
+  m_Extents: {x: 0.015, y: 0.555, z: 0.05}
   m_MoveThreshold: 0.1
   m_Carve: 1
   m_CarveOnlyStationary: 0
   m_Center: {x: 0, y: 0.555, z: 0}
   m_TimeToStationary: 0.5
---- !u!114 &7973477643880760628
+--- !u!114 &9216582460444857012
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

@@ -41,10 +41,14 @@ namespace ShakySurvival.Cover
             currentOccupant = null;
         }
         [Header("Transforms")]
-        [Tooltip("Where the player is positioned while hiding.")]
+        [Tooltip("Where the NPC/player is positioned while hiding.")]
         [SerializeField] private Transform hideAnchor;
+
+        [Tooltip("Where the NPC should navigate to BEFORE crawling under the table. " +
+                 "Must be ON the NavMesh (outside the NavMeshObstacle carve).")]
+        [SerializeField] private Transform entryPoint;
         
-        [Tooltip("Where the player exits to after leaving cover.")]
+        [Tooltip("Where the NPC/player exits to after leaving cover.")]
         [SerializeField] private Transform exitPoint;
 
         [Header("Camera Settings")]
@@ -77,6 +81,7 @@ namespace ShakySurvival.Cover
 
         // Public accessors
         public Transform HideAnchor => hideAnchor;
+        public Transform EntryPoint => entryPoint;
         public Transform ExitPoint => exitPoint;
 
         public float MaxLookYaw => maxLookYaw;

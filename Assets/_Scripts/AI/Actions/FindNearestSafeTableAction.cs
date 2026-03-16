@@ -101,20 +101,27 @@ namespace ShakySurvival.AI
                     continue;
                 }
 
-                // Find the CoverPoint child (recursive, case-insensitive).
-                Transform cover = FindChildRecursive(table.transform, "coverpoint");
-                if (cover == null)
+                // We need an EntryPoint (preferred) or ExitPoint to navigate to.
+                // These should be ON the NavMesh, outside the NavMeshObstacle carve.
+                Transform navTarget = null;
+                if (coverSpot != null)
+                    navTarget = coverSpot.EntryPoint ?? coverSpot.ExitPoint;
+
+                // Fallback: find the CoverPoint child (legacy, inside carve).
+                if (navTarget == null)
+                    navTarget = FindChildRecursive(table.transform, "coverpoint");
+
+                if (navTarget == null)
                     continue;
 
                 // ── NavMesh reachability check ───────────────────
-                // Sample the cover position onto the NavMesh surface first.
-                if (!NavMesh.SamplePosition(cover.position, out NavMeshHit hit, 2f, NavMesh.AllAreas))
+                if (!NavMesh.SamplePosition(navTarget.position, out NavMeshHit hit, 2f, NavMesh.AllAreas))
                 {
-                    Debug.Log($"[FindNearestSafeTable] '{table.name}' CoverPoint is not near a NavMesh surface. Skipping.");
+                    Debug.Log($"[FindNearestSafeTable] '{table.name}' entry point is not near a NavMesh surface. Skipping.");
                     continue;
                 }
 
-                // Calculate a path from the agent to the cover point.
+                // Calculate a path from the agent to the entry point.
                 navAgent.CalculatePath(hit.position, m_TempPath);
 
                 if (m_TempPath.status == NavMeshPathStatus.PathInvalid)
@@ -123,16 +130,14 @@ namespace ShakySurvival.AI
                     continue;
                 }
 
-                // Accept PathPartial if it gets close enough — the CoverPoint is often
-                // inside the table's NavMeshObstacle carve, so a full path isn't possible.
-                // The scripted crawl handles the last stretch.
+                // Accept PathPartial only if gap is small (≤1m).
                 if (m_TempPath.status == NavMeshPathStatus.PathPartial)
                 {
                     Vector3[] corners = m_TempPath.corners;
                     if (corners.Length == 0) continue;
 
                     float endGap = Vector3.Distance(corners[corners.Length - 1], hit.position);
-                    if (endGap > 2f)
+                    if (endGap > 1f)
                     {
                         Debug.Log($"[FindNearestSafeTable] '{table.name}' partial path too far ({endGap:F1}m). Skipping.");
                         continue;
@@ -145,7 +150,7 @@ namespace ShakySurvival.AI
                 {
                     bestDist  = dist;
                     bestTable = table;
-                    bestCover = cover;
+                    bestCover = navTarget;
                 }
             }
 

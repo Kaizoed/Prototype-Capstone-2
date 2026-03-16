@@ -1,6 +1,7 @@
 using TMPro;
 using UnityEngine;
-using ShakySurvival.Player;
+using PlayerMovement = ShakySurvival.Player.PlayerMovement;
+using PlayerLook = ShakySurvival.Player.PlayerLook;
 
 public class DialogueManager : MonoBehaviour
 {

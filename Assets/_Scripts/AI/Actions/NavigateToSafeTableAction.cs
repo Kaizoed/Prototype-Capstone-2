@@ -35,9 +35,13 @@ namespace ShakySurvival.AI
 
         // ── Internal State ───────────────────────────────────────
         private NavMeshAgent m_NavAgent;
+        private Transform    m_TargetTransform;   // live reference to the EntryPoint
+        private Vector3      m_LastSetDestination; // avoids re-setting every frame
 
         // A small tolerance added to stoppingDistance when deciding "arrived".
-        private const float k_ArrivalTolerance = 0.15f;
+        private const float k_ArrivalTolerance   = 0.15f;
+        // Only re-set destination if the target moved more than this distance.
+        private const float k_RetargetThreshold  = 0.3f;
 
         // ─────────────────────────────────────────────────────────
         protected override Status OnStart()
@@ -55,42 +59,55 @@ namespace ShakySurvival.AI
                 return Status.Failure;
             }
 
+            // Keep a live reference so we can track the target as it moves.
+            m_TargetTransform = TargetCoverPoint.Value;
+            m_LastSetDestination = m_TargetTransform.position;
+
             m_NavAgent.isStopped = false;
-            m_NavAgent.speed = 5f; // Run speed — triggers Run animation via NPCLocomotionSync
-            m_NavAgent.SetDestination(TargetCoverPoint.Value.position);
+            m_NavAgent.speed = 5f; // Run speed
+            m_NavAgent.SetDestination(m_LastSetDestination);
 
             return Status.Running;
         }
 
         protected override Status OnUpdate()
         {
-            if (m_NavAgent == null)
+            if (m_NavAgent == null || m_TargetTransform == null)
                 return Status.Failure;
+
+            // ── Continuously track the target (tables slide during earthquakes) ──
+            Vector3 currentTargetPos = m_TargetTransform.position;
+            if (Vector3.Distance(currentTargetPos, m_LastSetDestination) > k_RetargetThreshold)
+            {
+                m_NavAgent.SetDestination(currentTargetPos);
+                m_LastSetDestination = currentTargetPos;
+            }
 
             // While the path is still being computed, just wait.
             if (m_NavAgent.pathPending)
                 return Status.Running;
 
             // ── Dynamic obstacle check ───────────────────────────
-            NavMeshPathStatus pathStatus = m_NavAgent.pathStatus;
-
-            // Only fail on truly invalid paths (e.g. agent fell off NavMesh).
-            // PathPartial is expected because CoverPoints are inside the
-            // table's NavMeshObstacle carve — the agent gets close, and
-            // the scripted crawl handles the rest.
-            if (pathStatus == NavMeshPathStatus.PathInvalid)
+            if (m_NavAgent.pathStatus == NavMeshPathStatus.PathInvalid)
             {
                 Debug.LogWarning($"[NavigateToSafeTable] Path is Invalid — blacklisting table.");
-
                 BlacklistCurrentTable();
-
                 m_NavAgent.ResetPath();
                 return Status.Failure;
             }
 
-            // ── Arrival check ────────────────────────────────────
-            // For PathPartial the agent stops at the closest reachable point.
-            // Check if the agent has finished moving (velocity near zero + has a path).
+            // ── Arrival check using live target position ─────────
+            // Use direct distance to the CURRENT target position, not stale remainingDistance.
+            float distToTarget = Vector3.Distance(
+                m_NavAgent.transform.position, currentTargetPos);
+
+            if (distToTarget <= m_NavAgent.stoppingDistance + k_ArrivalTolerance)
+            {
+                return Status.Success;
+            }
+
+            // Also check NavMeshAgent's own arrival (for partial paths where
+            // the agent can't get any closer).
             if (!m_NavAgent.pathPending && m_NavAgent.hasPath &&
                 m_NavAgent.remainingDistance <= m_NavAgent.stoppingDistance + k_ArrivalTolerance)
             {

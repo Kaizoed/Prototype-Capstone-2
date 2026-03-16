@@ -13,12 +13,14 @@ GameObject:
   - component: {fileID: 2219106119083232358}
   - component: {fileID: 7008898983731432129}
   - component: {fileID: 154505347094136268}
+  - component: {fileID: 6744911541267149936}
+  - component: {fileID: 7912769161316395823}
   m_Layer: 0
   m_Name: SchoolDesk
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &2741076330487131290
 Transform:
@@ -30,7 +32,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -0, y: 0, z: 0}
-  m_LocalScale: {x: 0.92222, y: 0.92222, z: 0.92222}
+  m_LocalScale: {x: 2.2264245, y: 2.2264235, z: 2.2264245}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -136,3 +138,42 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.0142995, y: 0.8719819, z: 0.60374933}
   m_Center: {x: -0.0000023543835, y: 0.43659583, z: 0.22427092}
+--- !u!114 &6744911541267149936
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3494421824333646459}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e58b5708bcd8024dab99391a58c5029, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  weightData: {fileID: 11400000, guid: dffb2aa73f53def438807c5c6f3a65b6, type: 2}
+  fallbackJoltMultiplier: 1
+  fallbackBaseJoltVelocity: 0.3
+  fallbackMaxJoltVelocity: 1.2
+  fallbackVibrationFrequency: 10
+  fallbackAngularJoltMultiplier: 0.3
+  fallbackVerticalHopVelocity: 0.15
+  fallbackVerticalHopChance: 0.7
+  fallbackMinimumIntensity: 0.1
+  randomizeJoltTiming: 1
+  debugMode: 0
+--- !u!208 &7912769161316395823
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3494421824333646459}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 0.29, y: 0.43600002, z: 0.12}
+  m_MoveThreshold: 0.1
+  m_Carve: 1
+  m_CarveOnlyStationary: 0
+  m_Center: {x: 0, y: 0.437, z: 0.224}
+  m_TimeToStationary: 0.5

@@ -249,6 +249,8 @@ MonoBehaviour:
   coverSpot: {fileID: 301796983867524232}
   hidePrompt: Hide
   exitPrompt: Exit
+  hideDeskQuestId: hide_under_desk
+  completeQuestOnHide: 1
 --- !u!208 &8955645695976208194
 NavMeshObstacle:
   m_ObjectHideFlags: 0
@@ -342,7 +344,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6bb403470fde24c43a01ede399d40154, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentOccupant: {fileID: 0}
   hideAnchor: {fileID: 297493135340760422}
+  entryPoint: {fileID: 0}
   exitPoint: {fileID: 903876747643460278}
   maxLookYaw: 45
   maxLookUp: 20

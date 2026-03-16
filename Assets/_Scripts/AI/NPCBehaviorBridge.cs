@@ -35,9 +35,11 @@ namespace ShakySurvival.AI
         // ── Blackboard keys ─────────────────────────────────────
         private const string KEY_IS_EARTHQUAKE_ACTIVE = "IsEarthquakeActive";
         private const string KEY_IS_PANICKING         = "IsPanicking";
+        private const string KEY_IS_EVACUATING        = "IsEvacuating";
 
         private static readonly int s_CrouchHash     = Animator.StringToHash("Crouch");
         private static readonly int s_CoverCrawlHash = Animator.StringToHash("CoverCrawl");
+        private static readonly int s_PanicHash      = Animator.StringToHash("Panic");
 
         private Coroutine m_DelayRoutine;
         private Coroutine m_ExitRoutine;
@@ -85,10 +87,30 @@ namespace ShakySurvival.AI
 
             SetBlackboardBool(KEY_IS_PANICKING, false);
 
+            // Flag evacuation so the behavior tree's idle branch stays gated.
+            SetBlackboardBool(KEY_IS_EVACUATING, true);
+
+            // Immediately kill any panic animation so it blends back to idle.
+            Animator animator = GetComponentInChildren<Animator>();
+            if (animator != null)
+                animator.SetBool(s_PanicHash, false);
+
             // Start exit sequence — IsEarthquakeActive stays true until it finishes.
             if (m_ExitRoutine != null)
                 StopCoroutine(m_ExitRoutine);
             m_ExitRoutine = StartCoroutine(ExitCoverSequence());
+        }
+
+        // ── Public API (called by RoomEvacuationCoordinator) ────
+
+        /// <summary>
+        /// Sets or clears the IsEvacuating blackboard flag.
+        /// Call with false after evacuation is complete to let the
+        /// behavior tree resume normal idle behavior.
+        /// </summary>
+        public void SetEvacuating(bool evacuating)
+        {
+            SetBlackboardBool(KEY_IS_EVACUATING, evacuating);
         }
 
         // ── Delayed Reaction ────────────────────────────────────

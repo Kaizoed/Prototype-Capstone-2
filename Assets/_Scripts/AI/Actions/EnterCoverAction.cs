@@ -26,7 +26,7 @@ namespace ShakySurvival.AI
         description: "Crouches and crawls the NPC under a table to the HideAnchor position.",
         story: "[Agent] enters cover under [TargetTable]",
         category: "Action/Earthquake",
-        id: "ea1c0005000000000000000000000001")]
+        id: "ea1c0015000000000000000000000001")]
     public partial class EnterCoverAction : Action
     {
         // ── Blackboard Variables ─────────────────────────────────
@@ -34,16 +34,17 @@ namespace ShakySurvival.AI
         [SerializeReference] public BlackboardVariable<GameObject> TargetTable;
 
         // ── Tuning ──────────────────────────────────────────────
-        private const float k_CrawlSpeed       = 2f;
-        private const float k_AnimBlendTime    = 0.25f;
-        private const float k_ArrivalThreshold = 0.05f;
+        private const float k_CrawlSpeed        = 2f;
+        private const float k_AnimBlendTime     = 0.25f;
+        private const float k_ArrivalThreshold  = 0.05f;
+        private const float k_MaxCrawlDistance  = 3f;  // prevents phasing through walls
 
         // ── Animator hashes ─────────────────────────────────────
         private static readonly int s_CrouchHash     = Animator.StringToHash("Crouch");
         private static readonly int s_CoverCrawlHash = Animator.StringToHash("CoverCrawl");
 
         // ── Runtime state ───────────────────────────────────────
-        private enum Phase { BlendToCrouch, Crawling, Settling }
+        private enum Phase { BlendToCrouch, Crawling, Settling, Settled }
 
         private NavMeshAgent m_NavAgent;
         private Animator     m_Animator;
@@ -84,6 +85,17 @@ namespace ShakySurvival.AI
 
             m_HideAnchorPos  = coverSpot.HideAnchor.position;
             m_AgentTransform = Agent.Value.transform;
+
+            // Safety check — if the NPC is too far from the HideAnchor,
+            // the scripted crawl would phase through geometry.
+            float crawlDist = Vector3.Distance(
+                new Vector3(m_AgentTransform.position.x, 0f, m_AgentTransform.position.z),
+                new Vector3(m_HideAnchorPos.x, 0f, m_HideAnchorPos.z));
+            if (crawlDist > k_MaxCrawlDistance)
+            {
+                Debug.LogWarning($"[EnterCover] {Agent.Value.name} is {crawlDist:F1}m from HideAnchor — too far, aborting cover entry.");
+                return Status.Failure;
+            }
 
             // Get components.
             m_NavAgent = Agent.Value.GetComponentInChildren<NavMeshAgent>();
@@ -163,10 +175,15 @@ namespace ShakySurvival.AI
                 case Phase.Settling:
                     if (m_PhaseTimer <= 0f)
                     {
-                        Debug.Log("[EnterCover] Complete — NPC is under cover.");
-                        m_InProgress = false;
-                        return Status.Success;
+                        Debug.Log("[EnterCover] Complete — NPC is under cover (staying put).");
+                        m_Phase = Phase.Settled;
                     }
+                    break;
+
+                // ── Phase 4: Stay under cover forever ──
+                // Return Running so the Sequence never completes
+                // and Repeat doesn't re-trigger the whole branch.
+                case Phase.Settled:
                     break;
             }
 

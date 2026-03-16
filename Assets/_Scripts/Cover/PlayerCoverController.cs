@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using ShakySurvival.Player;
+using PlayerMovement = ShakySurvival.Player.PlayerMovement;
 using ShakySurvival.Camera;
 
 namespace ShakySurvival.Cover

@@ -5,18 +5,21 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Main Menu.unity
     guid: 9057d1457683de84097bd2cc77187afc
   - enabled: 0
     path: Assets/Scenes/Building 1.unity
     guid: a090f9b4882a1dd4985a175479a78d5a
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Building 2.unity
     guid: e627c061047dd9e4f94281345154592d
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/ExperimentZone.unity
     guid: fc6b3be69fc4bd04495a16dbb0b64a69
+  - enabled: 1
+    path: Assets/Scenes/Castillo_Scene/Building_Remake.unity
+    guid: 2d3d36765b0085549a4b4c64fac73d2d
   m_configObjects:
     com.unity.dt.app-ui: {fileID: 11400000, guid: 99f9c9493070a9d4c979a8fec7c5a8d3, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
