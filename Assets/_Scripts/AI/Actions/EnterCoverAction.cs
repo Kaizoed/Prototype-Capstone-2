@@ -8,18 +8,6 @@ using Action = Unity.Behavior.Action;
 
 namespace ShakySurvival.AI
 {
-    /// <summary>
-    /// Behavior Graph Action — scripted cover entry that mirrors the player's mechanic.
-    ///
-    /// After <see cref="NavigateToSafeTableAction"/> delivers the NPC to the table edge (CoverPoint),
-    /// this node takes over:
-    ///   1. Disables NavMeshAgent
-    ///   2. Plays Crouch animation (blend time)
-    ///   3. Plays CoverCrawl + lerps toward HideAnchor under the table
-    ///   4. Settles into Crouch Idle — NPC stays hidden
-    ///
-    /// Resilient to Behavior Tree re-evaluating/restarting the node mid-process.
-    /// </summary>
     [Serializable, GeneratePropertyBag]
     [NodeDescription(
         name: "Enter Cover",
@@ -53,13 +41,10 @@ namespace ShakySurvival.AI
         private Phase        m_Phase;
         private float        m_PhaseTimer;
 
-        // Guard flag — survives tree re-evaluation restarts.
         private bool m_InProgress;
 
-        // ─────────────────────────────────────────────────────────
         protected override Status OnStart()
         {
-            // If we're already mid-process (tree restarted us), just keep going.
             if (m_InProgress)
                 return Status.Running;
 
@@ -86,8 +71,6 @@ namespace ShakySurvival.AI
             m_HideAnchorPos  = coverSpot.HideAnchor.position;
             m_AgentTransform = Agent.Value.transform;
 
-            // Safety check — if the NPC is too far from the HideAnchor,
-            // the scripted crawl would phase through geometry.
             float crawlDist = Vector3.Distance(
                 new Vector3(m_AgentTransform.position.x, 0f, m_AgentTransform.position.z),
                 new Vector3(m_HideAnchorPos.x, 0f, m_HideAnchorPos.z));
@@ -97,11 +80,9 @@ namespace ShakySurvival.AI
                 return Status.Failure;
             }
 
-            // Get components.
             m_NavAgent = Agent.Value.GetComponentInChildren<NavMeshAgent>();
             m_Animator = Agent.Value.GetComponentInChildren<Animator>();
 
-            // Disable NavMeshAgent so it doesn't fight the scripted movement.
             if (m_NavAgent != null)
             {
                 m_NavAgent.ResetPath();
@@ -201,7 +182,6 @@ namespace ShakySurvival.AI
             }
         }
 
-        // ── Helpers ──────────────────────────────────────────────
         private void SetAnimatorState(bool crouch, bool crawl)
         {
             if (m_Animator == null) return;

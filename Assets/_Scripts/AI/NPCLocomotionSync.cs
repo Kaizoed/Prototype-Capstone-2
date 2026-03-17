@@ -3,11 +3,6 @@ using UnityEngine.AI;
 
 namespace ShakySurvival.AI
 {
-    /// <summary>
-    /// Syncs NavMeshAgent velocity → Animator "Speed" float for
-    /// a 1D Blend Tree (Idle / Walk / Run).
-    /// Snaps to idle when the agent stops to prevent lingering steps.
-    /// </summary>
     [RequireComponent(typeof(NavMeshAgent))]
     [RequireComponent(typeof(Animator))]
     public class NPCLocomotionSync : MonoBehaviour
@@ -42,12 +37,10 @@ namespace ShakySurvival.AI
 
             if (rawSpeed < idleThreshold)
             {
-                // Agent has stopped — quickly damp to idle (not instant snap).
                 m_SmoothedSpeed = Mathf.MoveTowards(m_SmoothedSpeed, 0f, decelSmoothing * Time.deltaTime);
             }
             else
             {
-                // Smooth toward the actual speed.
                 float rate = rawSpeed > m_SmoothedSpeed ? accelSmoothing : decelSmoothing;
                 m_SmoothedSpeed = Mathf.Lerp(m_SmoothedSpeed, rawSpeed, Time.deltaTime * rate);
             }

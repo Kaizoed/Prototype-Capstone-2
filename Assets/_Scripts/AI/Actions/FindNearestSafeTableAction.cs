@@ -9,22 +9,6 @@ using Action = Unity.Behavior.Action;
 
 namespace ShakySurvival.AI
 {
-    /// <summary>
-    /// Behavior Graph Action — finds the nearest REACHABLE table tagged "HideableTable"
-    /// that is NOT on the Blackboard's blacklist.
-    /// 
-    /// Validates NavMesh reachability via <see cref="NavMesh.CalculatePath"/>
-    /// so tables on different floors or behind missing NavMesh are skipped.
-    /// 
-    /// On success, writes the table's child "CoverPoint" Transform
-    /// to the <see cref="TargetCoverPoint"/> Blackboard variable.
-    /// 
-    /// Editor Setup:
-    ///   1. Tag every valid table with "HideableTable".
-    ///   2. Under each table, add a child (any depth) whose name
-    ///      contains "coverpoint" (case-insensitive) positioned
-    ///      where the NPC should crouch beneath it.
-    /// </summary>
     [Serializable, GeneratePropertyBag]
     [NodeDescription(
         name: "Find Nearest Safe Table",
@@ -34,20 +18,15 @@ namespace ShakySurvival.AI
         id: "ea1c0003000000000000000000000001")]
     public partial class FindNearestSafeTableAction : Action
     {
-        // ── Blackboard Variables ─────────────────────────────────
         [SerializeReference] public BlackboardVariable<GameObject> Agent;
         [SerializeReference] public BlackboardVariable<List<GameObject>> BlacklistedTables;
 
-        /// <summary>OUTPUT — the transform beneath the chosen table.</summary>
         [SerializeReference] public BlackboardVariable<Transform> TargetCoverPoint;
 
-        /// <summary>OUTPUT — the table GameObject itself (used for blacklisting later).</summary>
         [SerializeReference] public BlackboardVariable<GameObject> TargetTable;
 
-        // Reusable path object to avoid allocations every frame.
         private NavMeshPath m_TempPath;
 
-        // ─────────────────────────────────────────────────────────
         protected override Status OnStart()
         {
             if (Agent == null || Agent.Value == null)
@@ -56,7 +35,6 @@ namespace ShakySurvival.AI
                 return Status.Failure;
             }
 
-            // We need the NavMeshAgent to know where the NPC is on the NavMesh.
             NavMeshAgent navAgent = Agent.Value.GetComponentInChildren<NavMeshAgent>();
             if (navAgent == null || !navAgent.isOnNavMesh)
             {
@@ -89,7 +67,6 @@ namespace ShakySurvival.AI
             {
                 if (table == null) continue;
 
-                // Skip blacklisted tables.
                 if (blacklist != null && blacklist.Contains(table))
                     continue;
 
@@ -101,8 +78,6 @@ namespace ShakySurvival.AI
                     continue;
                 }
 
-                // We need an EntryPoint (preferred) or ExitPoint to navigate to.
-                // These should be ON the NavMesh, outside the NavMeshObstacle carve.
                 Transform navTarget = null;
                 if (coverSpot != null)
                     navTarget = coverSpot.EntryPoint ?? coverSpot.ExitPoint;
@@ -114,14 +89,12 @@ namespace ShakySurvival.AI
                 if (navTarget == null)
                     continue;
 
-                // ── NavMesh reachability check ───────────────────
                 if (!NavMesh.SamplePosition(navTarget.position, out NavMeshHit hit, 2f, NavMesh.AllAreas))
                 {
                     Debug.Log($"[FindNearestSafeTable] '{table.name}' entry point is not near a NavMesh surface. Skipping.");
                     continue;
                 }
 
-                // Calculate a path from the agent to the entry point.
                 navAgent.CalculatePath(hit.position, m_TempPath);
 
                 if (m_TempPath.status == NavMeshPathStatus.PathInvalid)
@@ -130,7 +103,6 @@ namespace ShakySurvival.AI
                     continue;
                 }
 
-                // Accept PathPartial only if gap is small (≤1m).
                 if (m_TempPath.status == NavMeshPathStatus.PathPartial)
                 {
                     Vector3[] corners = m_TempPath.corners;
@@ -144,7 +116,6 @@ namespace ShakySurvival.AI
                     }
                 }
 
-                // Use path length (walking distance) not straight-line distance.
                 float dist = CalculatePathLength(m_TempPath);
                 if (dist < bestDist)
                 {
@@ -181,12 +152,6 @@ namespace ShakySurvival.AI
             return Status.Success;
         }
 
-        // ── Helpers ──────────────────────────────────────────────
-
-        /// <summary>
-        /// Recursively searches all descendants for a child whose name
-        /// contains <paramref name="nameLower"/> (case-insensitive).
-        /// </summary>
         private static Transform FindChildRecursive(Transform parent, string nameLower)
         {
             foreach (Transform child in parent)
@@ -201,9 +166,6 @@ namespace ShakySurvival.AI
             return null;
         }
 
-        /// <summary>
-        /// Calculates the total walking distance along a NavMeshPath.
-        /// </summary>
         private static float CalculatePathLength(NavMeshPath path)
         {
             Vector3[] corners = path.corners;

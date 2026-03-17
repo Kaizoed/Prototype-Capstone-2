@@ -8,18 +8,6 @@ using Action = Unity.Behavior.Action;
 
 namespace ShakySurvival.AI
 {
-    /// <summary>
-    /// Behavior Graph Action — scripted cover entry.
-    ///
-    /// After <see cref="NavigateToSafeTableAction"/> delivers the NPC to the table edge,
-    /// this node:
-    ///   1. Disables NavMeshAgent
-    ///   2. Plays Crouch animation (blend)
-    ///   3. Plays CoverCrawl + lerps toward HideAnchor under the table
-    ///   4. Settles into Crouch Idle — NPC stays hidden
-    ///
-    /// Resilient to tree re-evaluation restarts via m_InProgress guard.
-    /// </summary>
     [Serializable, GeneratePropertyBag]
     [NodeDescription(
         name: "Trigger Crouch",
@@ -53,10 +41,8 @@ namespace ShakySurvival.AI
         private float        m_PhaseTimer;
         private bool         m_InProgress;
 
-        // ─────────────────────────────────────────────────────────
         protected override Status OnStart()
         {
-            // If already mid-process (tree restarted us), just keep going.
             if (m_InProgress)
                 return Status.Running;
 
@@ -72,7 +58,6 @@ namespace ShakySurvival.AI
                 return Status.Failure;
             }
 
-            // Get CoverSpot component to access HideAnchor.
             CoverSpot coverSpot = TargetTable.Value.GetComponentInChildren<CoverSpot>();
             if (coverSpot == null || coverSpot.HideAnchor == null)
             {
@@ -86,11 +71,9 @@ namespace ShakySurvival.AI
             m_NavAgent = Agent.Value.GetComponentInChildren<NavMeshAgent>();
             m_Animator = Agent.Value.GetComponentInChildren<Animator>();
 
-            // Disable root motion so the crawl animation doesn't fight our position lerp.
             if (m_Animator != null)
                 m_Animator.applyRootMotion = false;
 
-            // Disable NavMeshAgent so it doesn't fight the scripted movement.
             if (m_NavAgent != null)
             {
                 m_NavAgent.ResetPath();
@@ -99,7 +82,6 @@ namespace ShakySurvival.AI
                 m_NavAgent.updateRotation = false;
             }
 
-            // ── Phase 1: Blend to Crouch Idle ──
             m_Phase      = Phase.BlendToCrouch;
             m_PhaseTimer = k_AnimBlendTime;
             m_InProgress = true;

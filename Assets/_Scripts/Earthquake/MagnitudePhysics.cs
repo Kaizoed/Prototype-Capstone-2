@@ -2,10 +2,6 @@ using UnityEngine;
 
 namespace ShakySurvival.Earthquake
 {
-    // Static utility that converts Richter-scale magnitudes into
-    // physics-ready multipliers. All curves model the logarithmic
-    // nature of the Richter scale so that each integer step produces
-    // roughly 10× more energy.
     public static class MagnitudePhysics
     {
         // Supported range

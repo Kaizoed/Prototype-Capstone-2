@@ -7,13 +7,6 @@ using Action = Unity.Behavior.Action;
 
 namespace ShakySurvival.AI
 {
-    /// <summary>
-    /// Behavior Graph Action — casual idle wandering.
-    ///
-    /// Picks a random walkable NavMesh point within <see cref="Radius"/> meters,
-    /// walks there at a relaxed speed, waits 2–5 seconds, then returns Success
-    /// so the Repeat decorator re-triggers a new wander.
-    /// </summary>
     [Serializable, GeneratePropertyBag]
     [NodeDescription(
         name: "Idle Roam",
@@ -39,7 +32,6 @@ namespace ShakySurvival.AI
         private float m_WaitTimer;
         private bool  m_IsWaiting;
 
-        // ─────────────────────────────────────────────────────────
         protected override Status OnStart()
         {
             if (Agent == null || Agent.Value == null)
@@ -49,7 +41,6 @@ namespace ShakySurvival.AI
             if (m_NavAgent == null || !m_NavAgent.isOnNavMesh)
                 return Status.Failure;
 
-            // Re-enable NavMeshAgent in case a previous cover entry disabled it.
             m_NavAgent.updatePosition = true;
             m_NavAgent.updateRotation = true;
             m_NavAgent.isStopped = false;
@@ -86,14 +77,13 @@ namespace ShakySurvival.AI
             // Waiting at the point.
             m_WaitTimer -= Time.deltaTime;
             if (m_WaitTimer <= 0f)
-                return Status.Success; // Repeat will re-trigger a new wander.
+                return Status.Success;
 
             return Status.Running;
         }
 
         protected override void OnEnd()
         {
-            // Only reset path on normal completion, not tree re-evaluation.
             if (CurrentStatus == Status.Success || CurrentStatus == Status.Failure)
             {
                 if (m_NavAgent != null && m_NavAgent.isOnNavMesh)
@@ -101,18 +91,15 @@ namespace ShakySurvival.AI
             }
         }
 
-        // ── Helpers ──────────────────────────────────────────────
         private bool TryGetRandomNavMeshPoint(out Vector3 result)
         {
             Vector3 origin = Agent.Value.transform.position;
 
-            // Use a flat circle (XZ only) so we never pick points on other floors.
             Vector2 randomCircle = UnityEngine.Random.insideUnitCircle * Radius.Value;
             Vector3 randomPos = origin + new Vector3(randomCircle.x, 0f, randomCircle.y);
 
             if (NavMesh.SamplePosition(randomPos, out NavMeshHit hit, k_SampleMaxDist, NavMesh.AllAreas))
             {
-                // Reject if the sampled point is on a different floor.
                 if (Mathf.Abs(hit.position.y - origin.y) > 1.5f)
                 {
                     result = Vector3.zero;

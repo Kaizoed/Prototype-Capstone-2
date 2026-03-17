@@ -8,16 +8,10 @@ namespace ShakySurvival.Cover
         [Tooltip("Read-only. Shows who is currently occupying this cover spot.")]
         [SerializeField] private GameObject currentOccupant;
 
-        /// <summary>True if an NPC or the player is currently using this cover.</summary>
         public bool IsOccupied => currentOccupant != null;
 
-        /// <summary>Who is currently occupying this spot (null if empty).</summary>
         public GameObject Occupant => currentOccupant;
 
-        /// <summary>
-        /// Attempt to reserve this cover for <paramref name="requester"/>.
-        /// Returns true if the spot was free (or already owned by requester).
-        /// </summary>
         public bool TryOccupy(GameObject requester)
         {
             if (currentOccupant == null || currentOccupant == requester)
@@ -25,17 +19,15 @@ namespace ShakySurvival.Cover
                 currentOccupant = requester;
                 return true;
             }
-            return false; // Someone else is already here.
+            return false;
         }
 
-        /// <summary>Release this cover spot (only the current occupant can release).</summary>
         public void Release(GameObject requester)
         {
             if (currentOccupant == requester)
                 currentOccupant = null;
         }
 
-        /// <summary>Force-release regardless of who holds it.</summary>
         public void ForceRelease()
         {
             currentOccupant = null;
@@ -95,10 +87,8 @@ namespace ShakySurvival.Cover
         public float MaxApproachAngle => maxApproachAngle;
 
 
-        // The yaw angle the player should face while hidden (facing outward from cover).
         public float HiddenFacingYaw => hideAnchor != null ? hideAnchor.eulerAngles.y : 0f;
 
-        // Checks if the given interactor is within the valid approach angle.
         public bool IsValidApproach(Transform interactor)
         {
             if (hideAnchor == null) return true;

@@ -163,7 +163,6 @@ namespace ShakySurvival.AI
             m_ArrivedCount = 0;
             m_ArrivedSet.Clear();
 
-            // Gate the behavior tree's idle branch so it doesn't fight us.
             SetEvacuatingOnAllNPCs(true);
 
             if (debugMode) Debug.Log($"[RoomEvac] {gameObject.name}: Lining up {assignedNPCs.Length} NPCs.");
@@ -173,7 +172,6 @@ namespace ShakySurvival.AI
 
         private IEnumerator StaggeredLineUp()
         {
-            // ── Build nearest-available assignments first ──
             HashSet<int> claimedSpots = new HashSet<int>();
             List<(NPCController npc, Transform spot, int spotIndex)> assignments
                 = new List<(NPCController, Transform, int)>();
@@ -213,7 +211,6 @@ namespace ShakySurvival.AI
 
                 if (debugMode) Debug.Log($"[RoomEvac]   {npc.gameObject.name} → Spot {spotIndex} ('{spot.name}')");
 
-                // Wait before sending the next NPC (skip delay after the last one).
                 if (staggerDelay > 0f && i < assignments.Count - 1)
                     yield return new WaitForSeconds(staggerDelay);
             }
@@ -221,16 +218,13 @@ namespace ShakySurvival.AI
 
         private void OnNPCReachedLineUp(NPCController npc)
         {
-            // Guard against double-counting.
             if (!m_ArrivedSet.Add(npc)) return;
 
-            // Unsubscribe so this callback doesn't fire again for this phase.
             npc.OnDestinationReached -= OnNPCReachedLineUp;
 
             m_ArrivedCount++;
             if (debugMode) Debug.Log($"[RoomEvac] {npc.gameObject.name} lined up ({m_ArrivedCount}/{assignedNPCs.Length}).");
 
-            // Check if everyone is lined up.
             if (m_ArrivedCount >= CountValidNPCs())
             {
                 if (debugMode) Debug.Log("[RoomEvac] All NPCs lined up.");
@@ -244,7 +238,6 @@ namespace ShakySurvival.AI
 
             npc.OnDestinationReached -= OnNPCReachedSafeZone;
 
-            // Crouch at the safe zone spot.
             npc.SetCrouch(true);
 
             m_ArrivedCount++;
@@ -254,7 +247,6 @@ namespace ShakySurvival.AI
             {
                 m_State = EvacuationState.Done;
 
-                // Release the behavior tree gate.
                 SetEvacuatingOnAllNPCs(false);
 
                 if (debugMode) Debug.Log($"[RoomEvac] {gameObject.name}: Evacuation COMPLETE — all NPCs crouched at safe zone.");
@@ -265,13 +257,11 @@ namespace ShakySurvival.AI
         {
             if (requiresPlayer)
             {
-                // Wait for the player to approach before evacuating.
                 m_State = EvacuationState.WaitingForPlayer;
                 if (debugMode) Debug.Log("[RoomEvac] Waiting for player to approach...");
             }
             else
             {
-                // No player gate — evacuate immediately.
                 BeginEvacuationPhase();
             }
         }
@@ -290,14 +280,12 @@ namespace ShakySurvival.AI
 
             if (debugMode) Debug.Log($"[RoomEvac] Evacuating {assignedNPCs.Length} NPCs to safe zone (walking).");
 
-            // If we have safe zone spots, use nearest-available assignment.
             if (safeZoneSpots != null && safeZoneSpots.Length > 0)
             {
                 StartCoroutine(StaggeredEvacuation());
             }
             else
             {
-                // all NPCs walk to the single safeZoneWaypoint.
                 for (int i = 0; i < assignedNPCs.Length; i++)
                 {
                     NPCController npc = assignedNPCs[i];
@@ -311,7 +299,6 @@ namespace ShakySurvival.AI
 
         private IEnumerator StaggeredEvacuation()
         {
-            // Build nearest-available assignments.
             HashSet<int> claimedSpots = new HashSet<int>();
             List<(NPCController npc, Transform spot, int spotIndex)> assignments
                 = new List<(NPCController, Transform, int)>();
@@ -342,7 +329,6 @@ namespace ShakySurvival.AI
                 assignments.Add((npc, safeZoneSpots[bestSpot], bestSpot));
             }
 
-            // Send NPCs one by one.
             for (int i = 0; i < assignments.Count; i++)
             {
                 var (npc, spot, spotIndex) = assignments[i];
@@ -367,11 +353,6 @@ namespace ShakySurvival.AI
             return count;
         }
 
-        /// <summary>
-        /// Sets or clears the IsEvacuating flag on every assigned NPC's
-        /// <see cref="NPCBehaviorBridge"/>, gating the behavior tree's
-        /// idle branch during evacuation.
-        /// </summary>
         private void SetEvacuatingOnAllNPCs(bool evacuating)
         {
             for (int i = 0; i < assignedNPCs.Length; i++)
@@ -409,6 +390,7 @@ namespace ShakySurvival.AI
         }
 
         //  Gizmos
+        
         private void OnDrawGizmosSelected()
         {
             // Draw the player trigger radius.

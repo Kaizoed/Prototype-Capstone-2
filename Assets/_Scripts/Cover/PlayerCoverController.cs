@@ -6,10 +6,6 @@ using ShakySurvival.Camera;
 
 namespace ShakySurvival.Cover
 {
-    /// <summary>
-    /// Controls sequential, animation-driven player transitions into and out of cover.
-    /// The camera is attached to the player's head bone, so rotating/moving the body moves the camera.
-    /// </summary>
     public class PlayerCoverController : MonoBehaviour
     {
         [Header("References")]

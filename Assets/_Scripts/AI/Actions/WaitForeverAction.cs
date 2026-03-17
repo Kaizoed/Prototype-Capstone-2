@@ -6,14 +6,7 @@ using Action = Unity.Behavior.Action;
 
 namespace ShakySurvival.AI
 {
-    /// <summary>
-    /// Behavior Graph Action — does nothing forever.
-    /// Returns Running indefinitely, blocking this branch until
-    /// the parent node switches away (e.g. a condition changes).
-    ///
-    /// Use under the IsEvacuating = True branch so the behavior tree
-    /// stays idle while the RoomEvacuationCoordinator handles movement.
-    /// </summary>
+
     [Serializable, GeneratePropertyBag]
     [NodeDescription(
         name: "Wait Forever",

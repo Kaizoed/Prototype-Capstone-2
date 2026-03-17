@@ -50,16 +50,13 @@ namespace ShakySurvival.Earthquake
         [SerializeField] private bool autoStartOnAwake = false;
 
         // ── Public State ─────────────────────────────────────────────
-        /// <summary>Current magnitude-derived strength (updates every frame while active).</summary>
         public EarthquakeStrength CurrentStrength { get; private set; }
 
-        /// <summary>Simple 0-1 intensity (shorthand for CurrentStrength.NormalizedIntensity).</summary>
         public float CurrentIntensity => CurrentStrength.NormalizedIntensity;
 
         public bool IsActive { get; private set; }
         public float NormalizedTime { get; private set; }
 
-        /// <summary>The magnitude currently in use (from preset or inspector field).</summary>
         public float ActiveMagnitude => _activeMagnitude;
 
         // ── Private ──────────────────────────────────────────────────
@@ -71,13 +68,8 @@ namespace ShakySurvival.Earthquake
         private AnimationCurve _activeForceOverride;
         private InputAction _keyboardTAction;
 
-        // ══════════════════════════════════════════════════════════════
-        // Lifecycle
-        // ══════════════════════════════════════════════════════════════
-
         private void Awake()
         {
-            // Singleton enforcement
             if (_instance != null && _instance != this)
             {
                 Debug.LogWarning("[EarthquakeManager] Duplicate instance destroyed.");
@@ -143,11 +135,8 @@ namespace ShakySurvival.Earthquake
             _keyboardTAction?.Dispose();
         }
 
-        // ══════════════════════════════════════════════════════════════
         // Public API
-        // ══════════════════════════════════════════════════════════════
 
-        /// <summary>Start using Inspector values or the assigned preset.</summary>
         public void StartEarthquake()
         {
             if (preset != null)
@@ -160,16 +149,11 @@ namespace ShakySurvival.Earthquake
             }
         }
 
-        /// <summary>Start with a specific magnitude, using Inspector duration and curves.</summary>
         public void StartEarthquake(float mag)
         {
             StartEarthquake(mag, earthquakeDuration, intensityCurve, forceOverrideCurve);
         }
 
-        /// <summary>
-        /// Starts an earthquake for the experimentation zone.
-        /// Higher magnitudes last longer.
-        /// </summary>
         public void StartEarthquakeFromExperiment(float mag)
         {
             float clampedMag = Mathf.Clamp(mag, MagnitudePhysics.MIN_MAGNITUDE, MagnitudePhysics.MAX_MAGNITUDE);
@@ -180,7 +164,6 @@ namespace ShakySurvival.Earthquake
             StartEarthquake(clampedMag, scaledDuration, intensityCurve, forceOverrideCurve);
         }
 
-        /// <summary>Start using a MagnitudeSettings preset asset.</summary>
         public void StartEarthquake(MagnitudeSettings settings)
         {
             StartEarthquake(
@@ -191,7 +174,6 @@ namespace ShakySurvival.Earthquake
             );
         }
 
-        /// <summary>Full control: magnitude, duration, curves.</summary>
         public void StartEarthquake(float mag, float duration,
         AnimationCurve envelope = null, AnimationCurve forceOverride = null)
         {
@@ -226,9 +208,6 @@ namespace ShakySurvival.Earthquake
             EarthquakeEvents.RaiseEarthquakeStop();
         }
 
-        /// <summary>
-        /// Override the active magnitude at runtime (e.g. for aftershocks or gameplay triggers).
-        /// </summary>
         public void SetMagnitudeOverride(float mag)
         {
             _activeMagnitude = Mathf.Clamp(mag, MagnitudePhysics.MIN_MAGNITUDE, MagnitudePhysics.MAX_MAGNITUDE);
@@ -242,9 +221,7 @@ namespace ShakySurvival.Earthquake
             }
         }
 
-        // ══════════════════════════════════════════════════════════════
         // Internal
-        // ══════════════════════════════════════════════════════════════
 
         private void OnTestTrigger(InputAction.CallbackContext context)
         {

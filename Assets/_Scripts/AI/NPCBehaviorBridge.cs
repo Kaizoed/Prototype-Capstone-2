@@ -7,12 +7,7 @@ using ShakySurvival.Cover;
 
 namespace ShakySurvival.AI
 {
-    /// <summary>
-    /// Bridges EarthquakeEvents ↔ Behavior Tree Blackboard.
-    ///
-    /// Start  → delayed reaction → IsEarthquakeActive + IsPanicking
-    /// Stop   → exit cover coroutine (turn, crawl out, stand) → reset Blackboard
-    /// </summary>
+
     [RequireComponent(typeof(BehaviorGraphAgent))]
     public class NPCBehaviorBridge : MonoBehaviour
     {
@@ -87,15 +82,12 @@ namespace ShakySurvival.AI
 
             SetBlackboardBool(KEY_IS_PANICKING, false);
 
-            // Flag evacuation so the behavior tree's idle branch stays gated.
             SetBlackboardBool(KEY_IS_EVACUATING, true);
 
-            // Immediately kill any panic animation so it blends back to idle.
             Animator animator = GetComponentInChildren<Animator>();
             if (animator != null)
                 animator.SetBool(s_PanicHash, false);
 
-            // Start exit sequence — IsEarthquakeActive stays true until it finishes.
             if (m_ExitRoutine != null)
                 StopCoroutine(m_ExitRoutine);
             m_ExitRoutine = StartCoroutine(ExitCoverSequence());
@@ -103,11 +95,6 @@ namespace ShakySurvival.AI
 
         // ── Public API (called by RoomEvacuationCoordinator) ────
 
-        /// <summary>
-        /// Sets or clears the IsEvacuating blackboard flag.
-        /// Call with false after evacuation is complete to let the
-        /// behavior tree resume normal idle behavior.
-        /// </summary>
         public void SetEvacuating(bool evacuating)
         {
             SetBlackboardBool(KEY_IS_EVACUATING, evacuating);
@@ -136,7 +123,6 @@ namespace ShakySurvival.AI
             NavMeshAgent navAgent = GetComponentInChildren<NavMeshAgent>();
             Transform agentTransform = transform;
 
-            // Get the table reference for exit position and release.
             GameObject targetTable = null;
             CoverSpot coverSpot = null;
             if (behaviorAgent != null)
@@ -159,7 +145,6 @@ namespace ShakySurvival.AI
                 yield break;
             }
 
-            // Keep NavMeshAgent disabled during exit.
             if (navAgent != null)
             {
                 navAgent.ResetPath();
@@ -170,7 +155,6 @@ namespace ShakySurvival.AI
             if (animator != null)
                 animator.applyRootMotion = false;
 
-            // Find exit position.
             Vector3 exitPos = agentTransform.position;
             if (coverSpot != null && coverSpot.ExitPoint != null)
                 exitPos = coverSpot.ExitPoint.position;
@@ -229,7 +213,6 @@ namespace ShakySurvival.AI
                 animator.SetBool(s_CrouchHash, false);
             yield return new WaitForSeconds(exitStandBlendTime);
 
-            // ── Done ──
             ReEnableNavAgent(navAgent, animator, agentTransform);
             ReleaseCoverSpot(coverSpot);
             SetBlackboardBool(KEY_IS_EARTHQUAKE_ACTIVE, false);
@@ -238,7 +221,6 @@ namespace ShakySurvival.AI
             m_ExitRoutine = null;
         }
 
-        // ── Helpers ──────────────────────────────────────────────
         private void ReEnableNavAgent(NavMeshAgent navAgent, Animator animator, Transform agentTransform)
         {
             if (navAgent != null)

@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.AI;
+using System.Collections;
 using ShakySurvival.Earthquake;
 
 public class NPCEarthquakeReaction : MonoBehaviour
@@ -14,10 +15,22 @@ public class NPCEarthquakeReaction : MonoBehaviour
     [SerializeField] private string isRunningParam = "IsRunning";
     [SerializeField] private string isFallenParam = "IsFallen";
     [SerializeField] private string helpUpTriggerParam = "HelpUp";
+    [SerializeField] private string isPanickingParam = "IsPanicking";
 
     [Header("Behavior Options")]
     [SerializeField] private bool useIntroFreeze = false;
     [SerializeField] private bool evacuateAfterEarthquake = false;
+
+    [Header("Panic Settings")]
+    [Tooltip("Chance (0-1) that this NPC panics instead of crouching during an earthquake")]
+    [Range(0f, 1f)]
+    [SerializeField] private float panicChance = 0.3f;
+
+    [Tooltip("How far the NPC runs during panic run segments")]
+    [SerializeField] private float panicRunRadius = 8f;
+
+    [Tooltip("How long the panic animation plays before the NPC runs (seconds)")]
+    [SerializeField] private float panicAnimDuration = 2f;
 
     [Header("Evacuation")]
     [SerializeField] private float evacuationStartDelay = 0f;
@@ -37,6 +50,8 @@ public class NPCEarthquakeReaction : MonoBehaviour
 
     private bool introFinished = false;
     private bool hasFallen = false;
+    private bool isPanicking = false;
+    private Coroutine panicCoroutine;
 
     private void Update()
     {
@@ -134,6 +149,8 @@ public class NPCEarthquakeReaction : MonoBehaviour
     {
         if (!introFinished) return;
 
+        Debug.Log($"[NPCEarthquakeReaction] {gameObject.name} - HandleEarthquakeStart called. panicChance={panicChance}");
+
         if (aiMovementScript != null)
             aiMovementScript.enabled = false;
 
@@ -144,10 +161,110 @@ public class NPCEarthquakeReaction : MonoBehaviour
             navMeshAgent.ResetPath();
         }
 
+        // Roll for panic vs crouch
+        float roll = Random.value;
+        if (roll < panicChance)
+        {
+            // ── Panic path ──
+            Debug.Log($"[NPCEarthquakeReaction] {gameObject.name} - PANIC (roll={roll:F2})");
+            isPanicking = true;
+
+            if (animator != null)
+            {
+                animator.SetBool(earthquakeCrouchParam, false);
+                animator.SetBool(isRunningParam, false);
+                animator.SetBool(isPanickingParam, true);
+            }
+
+            panicCoroutine = StartCoroutine(PanicLoopCoroutine());
+        }
+        else
+        {
+            // ── Crouch path (existing behavior) ──
+            Debug.Log($"[NPCEarthquakeReaction] {gameObject.name} - CROUCH (roll={roll:F2})");
+            if (animator != null)
+            {
+                animator.SetBool(earthquakeCrouchParam, true);
+                animator.SetBool(isRunningParam, false);
+            }
+        }
+    }
+
+    private IEnumerator PanicLoopCoroutine()
+    {
+        // IsPanicking is already true (set by HandleEarthquakeStart).
+        // Agent is already stopped.
+
+        while (true)
+        {
+            // ── Phase 1: Hold panic animation (already playing) ──
+            yield return new WaitForSeconds(panicAnimDuration);
+
+            // ── Phase 2: Run to a random point ──
+            if (animator != null)
+            {
+                animator.SetBool(isPanickingParam, false);
+                animator.SetBool(isRunningParam, true);
+            }
+
+            Vector3 randomPoint = AIMovement.RandomNavSphere(transform.position, panicRunRadius);
+
+            if (navMeshAgent != null)
+            {
+                navMeshAgent.isStopped = false;
+                navMeshAgent.SetDestination(randomPoint);
+            }
+
+            // Wait until the agent arrives
+            if (navMeshAgent != null)
+            {
+                yield return null; // wait one frame for path to start calculating
+                while (navMeshAgent.pathPending ||
+                       navMeshAgent.remainingDistance > navMeshAgent.stoppingDistance + 0.1f)
+                {
+                    yield return null;
+                }
+            }
+
+            // ── Transition back to panic animation for next loop ──
+            if (navMeshAgent != null)
+            {
+                navMeshAgent.isStopped = true;
+                navMeshAgent.velocity = Vector3.zero;
+                navMeshAgent.ResetPath();
+            }
+
+            if (animator != null)
+            {
+                animator.SetBool(isRunningParam, false);
+                animator.SetBool(isPanickingParam, true);
+            }
+        }
+    }
+
+    private void StopPanic()
+    {
+        if (!isPanicking) return;
+
+        isPanicking = false;
+
+        if (panicCoroutine != null)
+        {
+            StopCoroutine(panicCoroutine);
+            panicCoroutine = null;
+        }
+
         if (animator != null)
         {
-            animator.SetBool(earthquakeCrouchParam, true);
+            animator.SetBool(isPanickingParam, false);
             animator.SetBool(isRunningParam, false);
+        }
+
+        if (navMeshAgent != null)
+        {
+            navMeshAgent.isStopped = true;
+            navMeshAgent.velocity = Vector3.zero;
+            navMeshAgent.ResetPath();
         }
     }
 
@@ -164,6 +281,9 @@ public class NPCEarthquakeReaction : MonoBehaviour
     private void HandleEarthquakeStop()
     {
         if (!introFinished) return;
+
+        // Immediately cut off panic if active
+        StopPanic();
 
         if (animator != null)
             animator.SetBool(earthquakeCrouchParam, false);
