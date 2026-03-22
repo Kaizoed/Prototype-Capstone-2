@@ -1,13 +1,10 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using ShakySurvival.Cover;
+using ShakySurvival.Interactions.Examine;
 
 namespace ShakySurvival.Interactions
 {
-    /// <summary>
-    /// Handles player input for interactions and delegates execution to the detector's target.
-    /// Updated to use Unity's New Input System.
-    /// </summary>
     [RequireComponent(typeof(InteractionDetector))]
     public class PlayerInteractor : MonoBehaviour
     {
@@ -21,11 +18,13 @@ namespace ShakySurvival.Interactions
         private InputActionMap _actionMap;
         private InputAction _interactAction;
         private PlayerCoverController _coverController;
+        private ExamineController _examineController;
 
         private void Awake()
         {
             _detector = GetComponent<InteractionDetector>();
             _coverController = GetComponent<PlayerCoverController>();
+            _examineController = GetComponent<ExamineController>();
             SetupInput();
         }
 
@@ -76,6 +75,12 @@ namespace ShakySurvival.Interactions
 
         private void TryInteract()
         {
+            if (_examineController != null && _examineController.IsExamining)
+            {
+                _examineController.StopExamine();
+                return;
+            }
+
             // If dialogue is active, continue dialogue first
             if (dialogueManager != null && dialogueManager.IsDialogueActive)
             {
