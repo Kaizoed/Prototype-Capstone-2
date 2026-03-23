@@ -43,15 +43,18 @@ namespace ShakySurvival.Interactions
 
             foreach (RaycastHit hit in hits)
             {
-                IInteractable interactable = hit.collider.GetComponent<IInteractable>();
+                IInteractable[] interactables = hit.collider.GetComponents<IInteractable>();
 
-                if (interactable == null)
-                    interactable = hit.collider.GetComponentInParent<IInteractable>();
+                if (interactables.Length == 0)
+                    interactables = hit.collider.GetComponentsInParent<IInteractable>();
 
-                if (interactable != null && interactable.CanInteract(gameObject))
+                foreach (IInteractable interactable in interactables)
                 {
-                    _currentInteractable = interactable;
-                    return;
+                    if (interactable != null && interactable.CanInteract(gameObject))
+                    {
+                        _currentInteractable = interactable;
+                        return;
+                    }
                 }
             }
         }

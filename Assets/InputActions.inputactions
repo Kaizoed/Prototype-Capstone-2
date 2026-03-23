@@ -52,6 +52,15 @@
                     "initialStateCheck": false
                 },
                 {
+                    "name": "TakeItem",
+                    "type": "Button",
+                    "id": "81baf959-ce5d-41bf-bfe8-e9d52a85b940",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
                     "name": "ToggleEarthquake",
                     "type": "Button",
                     "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
@@ -180,6 +189,17 @@
                     "processors": "",
                     "groups": ";Keyboard",
                     "action": "Interact",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "35d101c9-66ac-471f-b85c-5e467b84662d",
+                    "path": "<Keyboard>/e",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard",
+                    "action": "TakeItem",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

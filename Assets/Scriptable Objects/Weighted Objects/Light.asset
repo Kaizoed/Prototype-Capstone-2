@@ -13,11 +13,11 @@ MonoBehaviour:
   m_Name: Light
   m_EditorClassIdentifier: 
   weightClassName: Light
-  joltMultiplier: 1.5
-  baseJoltVelocity: 0.4
-  maxJoltVelocity: 1.5
+  joltMultiplier: 2
+  baseJoltVelocity: 0.5
+  maxJoltVelocity: 2
   vibrationFrequency: 12
-  angularJoltMultiplier: 0.5
+  angularJoltMultiplier: 0.7
   verticalHopVelocity: 0.2
   verticalHopChance: 0.7
   minimumIntensity: 0.1

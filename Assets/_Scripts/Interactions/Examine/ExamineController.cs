@@ -10,6 +10,11 @@ namespace ShakySurvival.Interactions.Examine
         public static ExamineController Instance { get; private set; }
 
         // ── Inspector ───────────────────────────────────────────
+        [Header("Input")]
+        [SerializeField] private InputActionAsset inputActions;
+        [SerializeField] private string actionMapName = "Player";
+        [SerializeField] private string takeActionName = "TakeItem";
+
         [Header("Offset")]
         [Tooltip("Transform the examined object lerps towards (child of camera).")]
         [SerializeField] private Transform examineOffset;
@@ -25,8 +30,9 @@ namespace ShakySurvival.Interactions.Examine
 
         // ── Events (for UI / other listeners) ───────────────────
         public event Action<ExamineInteractable> OnExamineStarted;
-
         public event Action OnExamineStopped;
+
+        public event Action<ExamineData> OnItemTaken;
 
         // ── State ───────────────────────────────────────────────
         private enum State { Idle, Examining, Returning }
@@ -41,8 +47,10 @@ namespace ShakySurvival.Interactions.Examine
 
         private PlayerMovement _playerMovement;
         private PlayerLook _playerLook;
+        private PlayerInventory _playerInventory;
 
-        // ── Lifecycle ───────────────────────────────────────────
+        private InputAction _takeAction;
+        private bool _takeRequested;
 
         private void Awake()
         {
@@ -56,11 +64,48 @@ namespace ShakySurvival.Interactions.Examine
 
             _playerMovement = GetComponent<PlayerMovement>();
             _playerLook = GetComponent<PlayerLook>();
+            _playerInventory = GetComponent<PlayerInventory>();
+            SetupInput();
+        }
+
+        private void OnEnable()
+        {
+            if (_takeAction != null)
+            {
+                _takeAction.Enable();
+                _takeAction.performed += OnTakePerformed;
+            }
+        }
+
+        private void OnDisable()
+        {
+            if (_takeAction != null)
+            {
+                _takeAction.performed -= OnTakePerformed;
+                _takeAction.Disable();
+            }
         }
 
         private void OnDestroy()
         {
             if (Instance == this) Instance = null;
+        }
+
+        private void SetupInput()
+        {
+            if (inputActions == null) return;
+
+            var map = inputActions.FindActionMap(actionMapName);
+            if (map == null) return;
+
+            _takeAction = map.FindAction(takeActionName);
+            if (_takeAction == null)
+                Debug.LogWarning($"[ExamineController] Could not find action '{takeActionName}' in map '{actionMapName}'.", this);
+        }
+
+        private void OnTakePerformed(InputAction.CallbackContext context)
+        {
+            _takeRequested = true;
         }
 
         private void Update()
@@ -108,10 +153,16 @@ namespace ShakySurvival.Interactions.Examine
         }
 
         // ── Update helpers ──────────────────────────────────────
-
         private void UpdateExamining()
         {
             if (_activeTransform == null) { ForceCleanup(); return; }
+
+            if (_takeRequested)
+            {
+                _takeRequested = false;
+                TakeItem();
+                return;
+            }
 
             _activeTransform.position = Vector3.Lerp(
                 _activeTransform.position,
@@ -145,7 +196,6 @@ namespace ShakySurvival.Interactions.Examine
 
             if (dist < returnThreshold && angle < 0.5f)
             {
-                // Snap exactly
                 _activeTransform.position = _originalPosition;
                 _activeTransform.rotation = _originalRotation;
                 FinishReturn();
@@ -154,7 +204,6 @@ namespace ShakySurvival.Interactions.Examine
 
         private void FinishReturn()
         {
-            // Unlock player
             _playerMovement?.UnlockInput();
             if (_playerLook != null)
             {
@@ -167,6 +216,39 @@ namespace ShakySurvival.Interactions.Examine
             _state = State.Idle;
 
             OnExamineStopped?.Invoke();
+        }
+
+        private void TakeItem()
+        {
+            if (_activeInteractable == null) return;
+
+            ExamineData data = _activeInteractable.Data;
+
+            if (_playerInventory != null)
+            {
+                _playerInventory.AddItem(data);
+            }
+            else
+            {
+                Debug.LogWarning("[ExamineController] No PlayerInventory found on this GameObject. " +
+                                 "Item was not stored.", this);
+            }
+
+            _activeInteractable.gameObject.SetActive(false);
+
+            OnItemTaken?.Invoke(data);
+            OnExamineStopped?.Invoke();
+
+            _playerMovement?.UnlockInput();
+            if (_playerLook != null)
+            {
+                _playerLook.UnlockLook();
+                _playerLook.LockCursor();
+            }
+
+            _activeInteractable = null;
+            _activeTransform = null;
+            _state = State.Idle;
         }
 
         private void ForceCleanup()

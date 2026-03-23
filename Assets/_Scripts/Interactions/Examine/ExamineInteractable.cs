@@ -20,7 +20,6 @@ namespace ShakySurvival.Interactions.Examine
         {
             get
             {
-                // While the controller is already examining something, hide prompt.
                 if (ExamineController.Instance != null && ExamineController.Instance.IsExamining)
                     return string.Empty;
 
@@ -31,7 +30,8 @@ namespace ShakySurvival.Interactions.Examine
 
         public bool CanInteract(GameObject interactor)
         {
-            // Block if the examine system is already busy.
+            if (!enabled) return false;
+
             if (ExamineController.Instance != null && ExamineController.Instance.IsExamining)
                 return false;
 
