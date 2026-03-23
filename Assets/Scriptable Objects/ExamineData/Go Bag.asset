@@ -12,5 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eb039e8b9b629fd4a8714e726dde1704, type: 3}
   m_Name: Go Bag
   m_EditorClassIdentifier: 
-  objectName: Unknown Object
-  description: 
+  objectName: Go bag
+  description: 'Information
+
+'
