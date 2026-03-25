@@ -4,7 +4,7 @@ namespace ShakySurvival.Interactions.Examine
 {
     [CreateAssetMenu(
         fileName = "New ExamineData",
-        menuName = "ShakySurvival/ExamineData",
+        menuName = "Shaky Survival/ExamineData",
         order = 0)]
     public class ExamineData : ScriptableObject
     {
