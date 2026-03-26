@@ -41,10 +41,6 @@ public class NPCEarthquakeReaction : MonoBehaviour
     [SerializeField] private GameObject standingNPCVisual;
     [SerializeField] private GameObject fallenNPCVisual;
 
-    [Header("Quest")]
-    [SerializeField] private bool triggerHelpQuestOnFall = false;
-    [SerializeField] private string helpQuestStepId = "help_fallen_npc";
-
     [Header("Optional AI Script To Pause")]
     [SerializeField] private MonoBehaviour aiMovementScript;
 
@@ -338,9 +334,9 @@ public class NPCEarthquakeReaction : MonoBehaviour
         if (fallenNPCVisual != null)
             fallenNPCVisual.SetActive(true);
 
-        if (triggerHelpQuestOnFall && QuestManager.Instance != null)
+        if (GameFlowManager.Instance != null)
         {
-            QuestManager.Instance.ForceSetCurrentStep(helpQuestStepId);
+            GameFlowManager.Instance.SetStep(GameFlowManager.GameStep.GuardEvacuationCutscene);
         }
     }
 }

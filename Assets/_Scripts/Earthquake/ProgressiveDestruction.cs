@@ -19,7 +19,6 @@ namespace ShakySurvival.Earthquake
         [SerializeField] private EarthquakeWeightData weightData;
 
         [Header("NPC Reaction On Collapse")]
-        [SerializeField] private ClassmateSequenceController classmateSequenceController;
 
         private Rigidbody[] _fracturedBodies;
         private DestructionPhase _currentPhase = DestructionPhase.Intact;
@@ -119,10 +118,6 @@ namespace ShakySurvival.Earthquake
             AddReactorsToFragments();
 
             // Tell the classmate NPC to fall when the wall collapses
-            if (classmateSequenceController != null)
-            {
-                classmateSequenceController.OnWallExplosionHit();
-            }
         }
 
         private void SetFracturedBodiesKinematic(bool isKinematic)

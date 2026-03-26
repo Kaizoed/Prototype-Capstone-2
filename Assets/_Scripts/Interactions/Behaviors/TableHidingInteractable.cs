@@ -138,7 +138,7 @@ namespace ShakySurvival.Interactions.Behaviors
                 if (coverSpot.IsOccupied && coverSpot.Occupant != interactor)
                     return false;
 
-                return coverSpot.IsValidApproach(interactor.transform);
+                return true;
             }
 
             if (_playerController.CurrentState == CoverState.Hidden)

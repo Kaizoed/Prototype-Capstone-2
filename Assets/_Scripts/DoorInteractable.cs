@@ -18,9 +18,8 @@ public class DoorInteractable : MonoBehaviour, IInteractable
     [SerializeField] private string closeText = "Close Door";
     [SerializeField] private string lockedText = "Door is locked";
 
-    [Header("Quest Lock")]
-    [SerializeField] private bool lockedUntilQuestStep = true;
-    [SerializeField] private string requiredQuestStepId = "Go To Classroom";
+    [Header("Flow Lock")]
+    [SerializeField] private bool lockedUntilEvacuation = false;
 
     private bool isOpen;
     private bool hasBeenUnlocked;
@@ -130,9 +129,7 @@ public class DoorInteractable : MonoBehaviour, IInteractable
         }
 
         Vector3 toOpener = opener.transform.position - sideCheckTransform.position;
-
         float dot = Vector3.Dot(sideCheckTransform.forward, toOpener);
-
         float finalAngle = dot >= 0f ? openAngle : -openAngle;
 
         openRotation = closedRotation * Quaternion.Euler(0f, finalAngle, 0f);
@@ -140,16 +137,16 @@ public class DoorInteractable : MonoBehaviour, IInteractable
 
     private bool IsLocked()
     {
-        if (!lockedUntilQuestStep)
+        if (!lockedUntilEvacuation)
             return false;
 
         if (hasBeenUnlocked)
             return false;
 
-        if (QuestManager.Instance == null)
+        if (GameFlowManager.Instance == null)
             return true;
 
-        if (QuestManager.Instance.CurrentStepId == requiredQuestStepId)
+        if (GameFlowManager.Instance.currentStep == GameFlowManager.GameStep.Evacuate)
         {
             hasBeenUnlocked = true;
             return false;

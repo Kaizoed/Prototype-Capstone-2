@@ -3,7 +3,6 @@ using ShakySurvival.Player;
 
 public class SafeAreaTrigger : MonoBehaviour
 {
-    [SerializeField] private string requiredQuestStepId = "reach_safe_area";
     [SerializeField] private GameObject endGamePanel;
 
     [Header("Player Control")]
@@ -17,12 +16,11 @@ public class SafeAreaTrigger : MonoBehaviour
         if (triggered) return;
         if (!other.CompareTag("Player")) return;
 
-        if (QuestManager.Instance == null) return;
-        if (QuestManager.Instance.CurrentStepId != requiredQuestStepId) return;
+        if (GameFlowManager.Instance == null) return;
+        if (GameFlowManager.Instance.currentStep != GameFlowManager.GameStep.Evacuate) return;
 
         triggered = true;
-
-        QuestManager.Instance.CompleteStep(requiredQuestStepId);
+        GameFlowManager.Instance.SetStep(GameFlowManager.GameStep.End);
 
         // Disable player controls
         if (playerMovementScript != null)

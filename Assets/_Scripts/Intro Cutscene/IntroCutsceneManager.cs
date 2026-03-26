@@ -27,7 +27,6 @@ public class IntroCutsceneManager : MonoBehaviour
     [SerializeField] private float standUpDuration = 0.75f;
 
     [Header("UI")]
-    [SerializeField] private GameObject questPanel;
     [SerializeField] private GameObject dialoguePanel;
     [SerializeField] private TMP_Text dialogueText;
 
@@ -76,9 +75,6 @@ public class IntroCutsceneManager : MonoBehaviour
             cameraStabilizer.CinematicMode = true;
             cameraStabilizer.SnapToTarget();
         }
-
-        if (questPanel != null)
-            questPanel.SetActive(false);
 
         if (dialoguePanel != null)
             dialoguePanel.SetActive(true);
@@ -153,6 +149,25 @@ public class IntroCutsceneManager : MonoBehaviour
             playerLookScript.enabled = false;
         }
 
+        // Put camera back into cinematic mode
+        if (cameraStabilizer != null)
+        {
+            cameraStabilizer.CinematicMode = true;
+            cameraStabilizer.SnapToTarget();
+        }
+
+        // IMPORTANT: reset camera local look rotation
+        if (cameraRoot != null)
+        {
+            cameraRoot.localRotation = Quaternion.identity;
+        }
+
+        // Rotate player back to teacher
+        yield return StartCoroutine(RotatePlayerToTeacher());
+
+        if (cameraStabilizer != null)
+            cameraStabilizer.SnapToTarget();
+
         if (dialoguePanel != null)
             dialoguePanel.SetActive(true);
 
@@ -180,7 +195,14 @@ public class IntroCutsceneManager : MonoBehaviour
         if (dialoguePanel != null)
             dialoguePanel.SetActive(false);
 
-        // Re-enable player system, but lock only movement
+        // Back to gameplay camera
+        if (cameraStabilizer != null)
+        {
+            cameraStabilizer.CinematicMode = false;
+            cameraStabilizer.SnapToTarget();
+        }
+
+        // Re-enable player system, but lock movement only
         if (playerMovementScript != null)
         {
             playerMovementScript.enabled = true;
@@ -195,13 +217,6 @@ public class IntroCutsceneManager : MonoBehaviour
             playerLookScript.LockCursor();
         }
 
-        if (classroomNPCManager != null)
-        {
-            classroomNPCManager.EndIntroForAllNPCs();
-        }
-
-        if (questPanel != null)
-            questPanel.SetActive(true);
     }
 
     private void TriggerEarthquakeResponse()
@@ -209,6 +224,12 @@ public class IntroCutsceneManager : MonoBehaviour
         earthquakeTriggered = true;
 
         Debug.Log("Earthquake triggered during Dialogue Part 2.");
+
+        // IMPORTANT: let NPCs exit intro freeze first
+        if (classroomNPCManager != null)
+        {
+            classroomNPCManager.EndIntroForAllNPCs();
+        }
 
         if (GameFlowManager.Instance != null)
         {
@@ -224,8 +245,6 @@ public class IntroCutsceneManager : MonoBehaviour
             Debug.LogWarning("EarthquakeManager is not assigned in IntroCutsceneManager.");
         }
 
-        if (questPanel != null)
-            questPanel.SetActive(true);
     }
 
     private IEnumerator RotatePlayerToTeacher()
