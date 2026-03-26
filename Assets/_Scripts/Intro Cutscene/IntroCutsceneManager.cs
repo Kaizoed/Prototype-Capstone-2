@@ -8,7 +8,7 @@ using UnityEngine;
 public class IntroCutsceneManager : MonoBehaviour
 {
     [Header("Player Control")]
-    [SerializeField] private MonoBehaviour playerMovementScript;
+    [SerializeField] private PlayerMovement playerMovementScript;
     [SerializeField] private PlayerLook playerLookScript;
 
     [Header("Player References")]
@@ -42,6 +42,9 @@ public class IntroCutsceneManager : MonoBehaviour
     [SerializeField] private int earthquakeTriggerLineIndex = 1;
     [SerializeField] private bool earthquakeTriggered = false;
 
+    [Header("Go Bag")]
+    [SerializeField] private bool allowMovementDuringGoBag = true;
+
     [Header("Classroom NPCs")]
     [SerializeField] private ClassroomNPCManager classroomNPCManager;
 
@@ -58,6 +61,7 @@ public class IntroCutsceneManager : MonoBehaviour
             cameraRoot.localRotation = Quaternion.identity;
         }
 
+        // Full lock during intro cutscene
         if (playerMovementScript != null)
             playerMovementScript.enabled = false;
 
@@ -111,9 +115,15 @@ public class IntroCutsceneManager : MonoBehaviour
             playerLookScript.LockCursor();
         }
 
-        // Change this to false if you want NO WASD during Go Bag
         if (playerMovementScript != null)
+        {
             playerMovementScript.enabled = true;
+
+            if (allowMovementDuringGoBag)
+                playerMovementScript.UnlockMovementOnly();
+            else
+                playerMovementScript.LockMovementOnly();
+        }
 
         if (GameFlowManager.Instance != null)
         {
@@ -133,7 +143,7 @@ public class IntroCutsceneManager : MonoBehaviour
 
     private IEnumerator PlayDialoguePart2()
     {
-        // Lock player again for dialogue
+        // Full lock again for dialogue
         if (playerMovementScript != null)
             playerMovementScript.enabled = false;
 
@@ -158,7 +168,6 @@ public class IntroCutsceneManager : MonoBehaviour
             {
                 dialogueText.text = introLinesPart2[i];
 
-                // Trigger earthquake on a specific dialogue line
                 if (!earthquakeTriggered && i == earthquakeTriggerLineIndex)
                 {
                     TriggerEarthquakeResponse();
@@ -171,11 +180,14 @@ public class IntroCutsceneManager : MonoBehaviour
         if (dialoguePanel != null)
             dialoguePanel.SetActive(false);
 
-        // After part 2, keep movement locked
+        // Re-enable player system, but lock only movement
         if (playerMovementScript != null)
-            playerMovementScript.enabled = false;
+        {
+            playerMovementScript.enabled = true;
+            playerMovementScript.LockMovementOnly();
+        }
 
-        // Allow look so player can see the shaking / table
+        // Allow look so player can crouch + find table
         if (playerLookScript != null)
         {
             playerLookScript.enabled = true;
@@ -188,7 +200,6 @@ public class IntroCutsceneManager : MonoBehaviour
             classroomNPCManager.EndIntroForAllNPCs();
         }
 
-        // Show quest panel after dialogue if you want instructions visible
         if (questPanel != null)
             questPanel.SetActive(true);
     }
@@ -206,7 +217,6 @@ public class IntroCutsceneManager : MonoBehaviour
 
         if (earthquakeManager != null)
         {
-            // Replace this with your actual earthquake start method if different
             earthquakeManager.StartEarthquake();
         }
         else
@@ -214,13 +224,8 @@ public class IntroCutsceneManager : MonoBehaviour
             Debug.LogWarning("EarthquakeManager is not assigned in IntroCutsceneManager.");
         }
 
-        // Optional: show quest panel here immediately
         if (questPanel != null)
             questPanel.SetActive(true);
-
-        // If you have tutorial prompt UI later, this is where you show:
-        // "Press Ctrl to crouch"
-        // then "Press F near the table to hide"
     }
 
     private IEnumerator RotatePlayerToTeacher()

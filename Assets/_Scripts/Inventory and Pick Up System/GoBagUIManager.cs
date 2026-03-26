@@ -70,10 +70,10 @@ public class GoBagUIManager : MonoBehaviour
 
         checklistText.text =
             "GO BAG CHECKLIST\n\n" +
-            $"{(hasFlashlight ? "[✓]" : "[ ]")} Flashlight\n" +
-            $"{(hasHealthKit ? "[✓]" : "[ ]")} Health Kit\n" +
-            $"{(hasWaterBottle ? "[✓]" : "[ ]")} Water Bottle\n" +
-            $"{(hasBattery ? "[✓]" : "[ ]")} Battery";
+            $"{(hasFlashlight ? "[DONE]" : "[ ]")} Flashlight\n" +
+            $"{(hasHealthKit ? "[DONE]" : "[ ]")} Health Kit\n" +
+            $"{(hasWaterBottle ? "[DONE]" : "[ ]")} Water Bottle\n" +
+            $"{(hasBattery ? "[DONE]" : "[ ]")} Battery";
     }
 
     private void CheckIfComplete()

@@ -37,11 +37,12 @@ namespace ShakySurvival.Player
 
         public MoveState CurrentMoveState { get; private set; } = MoveState.Idle;
         public bool IsInputLocked { get; private set; }
+        public bool IsMovementLocked { get; private set; }
         public bool IsCrouching => CurrentMoveState == MoveState.Crouching || _forcedCrouch;
         public Vector3 Velocity => _velocity;
         public float SpeedMultiplier { get; private set; } = 1f;
         public Vector3 ExternalDrift { get; private set; } = Vector3.zero;
-        
+
         private CharacterController _controller;
         private Vector3 _velocity;
         private bool _isGrounded;
@@ -63,11 +64,13 @@ namespace ShakySurvival.Player
         private bool _hasAnimator;
         private bool _forcedCrouch;
 
+        // Tutorial flow
+        private bool _earthquakeCrouchTutorialCompleted;
+
         private void Awake()
         {
             _controller = GetComponent<CharacterController>();
 
-            // Initialize animator
             if (animator == null)
             {
                 _hasAnimator = TryGetComponent(out animator);
@@ -77,7 +80,6 @@ namespace ShakySurvival.Player
                 _hasAnimator = true;
             }
 
-            // Hash animator parameters for performance
             _xVelHash = Animator.StringToHash("X_Velocity");
             _yVelHash = Animator.StringToHash("Y_Velocity");
             _crouchHash = Animator.StringToHash("Crouch");
@@ -93,6 +95,7 @@ namespace ShakySurvival.Player
             CheckGrounded();
             HandleMovement();
             UpdateAnimator();
+            CheckEarthquakeCrouchTutorial();
         }
 
         public void SetForcedCrouch(bool value)
@@ -175,9 +178,13 @@ namespace ShakySurvival.Player
             _playerActionMap.Disable();
         }
 
-        private void OnMove(InputAction.CallbackContext context) { _moveInput = context.ReadValue<Vector2>(); }
-        private void OnSprint(InputAction.CallbackContext context) 
-        { 
+        private void OnMove(InputAction.CallbackContext context)
+        {
+            _moveInput = context.ReadValue<Vector2>();
+        }
+
+        private void OnSprint(InputAction.CallbackContext context)
+        {
             _sprintPressed = context.performed;
 
             if (_sprintPressed)
@@ -185,9 +192,10 @@ namespace ShakySurvival.Player
                 _crouchPressed = false;
             }
         }
+
         private void OnCrouch(InputAction.CallbackContext context)
         {
-            if (context.performed)
+            if (context.performed && !IsInputLocked)
             {
                 _crouchPressed = !_crouchPressed;
             }
@@ -196,18 +204,38 @@ namespace ShakySurvival.Player
         public void LockInput()
         {
             IsInputLocked = true;
+            IsMovementLocked = true;
             _velocity.x = 0f;
             _velocity.z = 0f;
         }
 
-        public void UnlockInput() { IsInputLocked = false; }
+        public void UnlockInput()
+        {
+            IsInputLocked = false;
+            IsMovementLocked = false;
+        }
+
+        public void LockMovementOnly()
+        {
+            IsMovementLocked = true;
+            _velocity.x = 0f;
+            _velocity.z = 0f;
+        }
+
+        public void UnlockMovementOnly()
+        {
+            IsMovementLocked = false;
+        }
 
         public void SetSpeedMultiplier(float multiplier)
         {
             SpeedMultiplier = Mathf.Clamp(multiplier, 0.1f, 2f);
         }
 
-        public void SetExternalDrift(Vector3 drift) { ExternalDrift = drift; }
+        public void SetExternalDrift(Vector3 drift)
+        {
+            ExternalDrift = drift;
+        }
 
         private void CheckGrounded()
         {
@@ -221,11 +249,11 @@ namespace ShakySurvival.Player
 
         private void HandleMovement()
         {
-            float horizontal = IsInputLocked ? 0f : _moveInput.x;
-            float vertical = IsInputLocked ? 0f : _moveInput.y;
+            float horizontal = (IsInputLocked || IsMovementLocked) ? 0f : _moveInput.x;
+            float vertical = (IsInputLocked || IsMovementLocked) ? 0f : _moveInput.y;
 
             bool wantsToCrouch = _forcedCrouch || (!IsInputLocked && _crouchPressed);
-            bool wantsToRun = !IsInputLocked && _sprintPressed && !wantsToCrouch;
+            bool wantsToRun = !IsInputLocked && !IsMovementLocked && _sprintPressed && !wantsToCrouch;
 
             Vector3 moveDir = transform.right * horizontal + transform.forward * vertical;
             moveDir = Vector3.ClampMagnitude(moveDir, 1f);
@@ -267,12 +295,11 @@ namespace ShakySurvival.Player
 
             Vector3 horizontalMove = moveDir * currentSpeed * SpeedMultiplier;
             horizontalMove += ExternalDrift;
-            
+
             _velocity.x = horizontalMove.x;
             _velocity.z = horizontalMove.z;
             _velocity.y += gravity * Time.deltaTime;
 
-            // Only move if controller is enabled (not during cover transitions)
             if (_controller.enabled)
             {
                 _controller.Move(_velocity * Time.deltaTime);
@@ -283,33 +310,52 @@ namespace ShakySurvival.Player
         {
             if (!_hasAnimator) return;
 
-            // Calculate target animation velocity based on movement state
-            // Scale values match Blend Tree positions
             float animScale = CurrentMoveState switch
             {
                 MoveState.Running => runAnimScale,
                 MoveState.Walking => walkAnimScale,
                 MoveState.Crouching => crouchAnimScale,
-                _ => 0f // Idle
+                _ => 0f
             };
 
-            // Target velocity: raw input scaled to match Blend Tree positions
-            Vector2 targetVelocity = IsInputLocked ? Vector2.zero : _moveInput * animScale;
+            Vector2 targetVelocity = (IsInputLocked || IsMovementLocked) ? Vector2.zero : _moveInput * animScale;
 
-            // Smoothly interpolate animation velocity towards target
             _animationVelocity.x = Mathf.Lerp(_animationVelocity.x, targetVelocity.x, animBlendSpeed * Time.deltaTime);
             _animationVelocity.y = Mathf.Lerp(_animationVelocity.y, targetVelocity.y, animBlendSpeed * Time.deltaTime);
 
-            // Set animator parameters
             animator.SetFloat(_xVelHash, _animationVelocity.x);
             animator.SetFloat(_yVelHash, _animationVelocity.y);
 
-            // Only drive Crouch from movement input when not locked.
-            // When locked (e.g. during cover transitions), the cover system
-            // drives the Crouch bool directly — we must not override it.
             if (!IsInputLocked)
             {
                 animator.SetBool(_crouchHash, IsCrouching);
+            }
+        }
+
+        private void CheckEarthquakeCrouchTutorial()
+        {
+            if (GameFlowManager.Instance == null)
+                return;
+
+            if (GameFlowManager.Instance.currentStep != GameFlowManager.GameStep.EarthquakeResponse)
+            {
+                _earthquakeCrouchTutorialCompleted = false;
+                return;
+            }
+
+            if (_earthquakeCrouchTutorialCompleted)
+                return;
+
+            if (IsCrouching)
+            {
+                _earthquakeCrouchTutorialCompleted = true;
+
+                if (TutorialManager.Instance != null)
+                {
+                    TutorialManager.Instance.ShowTutorial("Press F near the table to hide.");
+                }
+
+                Debug.Log("Earthquake crouch tutorial completed.");
             }
         }
     }
