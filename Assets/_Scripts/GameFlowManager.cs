@@ -6,17 +6,17 @@ public class GameFlowManager : MonoBehaviour
 
     public enum GameStep
     {
-        GoBag,
-        LectureDuckCoverHold,
-        DuckCoverHold,
-        FallInLine,
-        DownedClassmate,
-        CallResponders,
-        Evacuate,
+        Intro,                  // Cutscene + Dialogue Part 1
+        GoBag,                  // Go Bag tutorial
+        DialoguePart2,          // Resume teacher dialogue
+        EarthquakeResponse,     // Earthquake starts, player must crouch/hide
+        GuardEvacuationCutscene,// Guard enters and tells everyone to evacuate
+        FallInLine,             // Optional: player lines up first
+        Evacuate,               // Player can finally move with WASD
         End
     }
 
-    public GameStep currentStep = GameStep.GoBag;
+    public GameStep currentStep = GameStep.Intro;
 
     private void Awake()
     {

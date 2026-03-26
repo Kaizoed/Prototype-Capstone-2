@@ -1,8 +1,9 @@
-using System.Collections;
-using UnityEngine;
-using TMPro;
-using ShakySurvival.Camera;
+﻿using ShakySurvival.Camera;
+using ShakySurvival.Earthquake;
 using ShakySurvival.Player;
+using System.Collections;
+using TMPro;
+using UnityEngine;
 
 public class IntroCutsceneManager : MonoBehaviour
 {
@@ -32,11 +33,14 @@ public class IntroCutsceneManager : MonoBehaviour
 
     [Header("Dialogue")]
     [TextArea(2, 4)]
-    [SerializeField] private string[] introLines;
+    [SerializeField] private string[] introLinesPart1;
+    [SerializeField] private string[] introLinesPart2;
     [SerializeField] private float lineDuration = 2.5f;
 
-    [Header("Tutorial")]
-    [SerializeField] private TutorialManager tutorialManager;
+    [Header("Earthquake Trigger")]
+    [SerializeField] private EarthquakeManager earthquakeManager;
+    [SerializeField] private int earthquakeTriggerLineIndex = 1;
+    [SerializeField] private bool earthquakeTriggered = false;
 
     [Header("Classroom NPCs")]
     [SerializeField] private ClassroomNPCManager classroomNPCManager;
@@ -77,11 +81,12 @@ public class IntroCutsceneManager : MonoBehaviour
 
         yield return StartCoroutine(RotatePlayerToTeacher());
 
-        if (dialogueText != null && introLines != null && introLines.Length > 0)
+        // PART 1 DIALOGUE
+        if (dialogueText != null && introLinesPart1 != null && introLinesPart1.Length > 0)
         {
-            for (int i = 0; i < introLines.Length; i++)
+            for (int i = 0; i < introLinesPart1.Length; i++)
             {
-                dialogueText.text = introLines[i];
+                dialogueText.text = introLinesPart1[i];
                 yield return new WaitForSeconds(lineDuration);
             }
         }
@@ -98,9 +103,7 @@ public class IntroCutsceneManager : MonoBehaviour
             cameraStabilizer.SnapToTarget();
         }
 
-        if (playerMovementScript != null)
-            playerMovementScript.enabled = true;
-
+        // Go Bag phase
         if (playerLookScript != null)
         {
             playerLookScript.enabled = true;
@@ -108,22 +111,116 @@ public class IntroCutsceneManager : MonoBehaviour
             playerLookScript.LockCursor();
         }
 
-        if (tutorialManager != null)
+        // Change this to false if you want NO WASD during Go Bag
+        if (playerMovementScript != null)
+            playerMovementScript.enabled = true;
+
+        if (GameFlowManager.Instance != null)
         {
-            Debug.Log("[IntroCutsceneManager] Calling StartTutorial on object: " + tutorialManager.gameObject.name);
-            Debug.Log("[IntroCutsceneManager] TutorialManager enabled: " + tutorialManager.enabled);
-            Debug.Log("[IntroCutsceneManager] TutorialManager activeInHierarchy: " + tutorialManager.gameObject.activeInHierarchy);
-            tutorialManager.StartTutorial();
+            GameFlowManager.Instance.SetStep(GameFlowManager.GameStep.GoBag);
         }
-        else
+
+        if (GoBagUIManager.Instance != null)
         {
-            Debug.LogWarning("[IntroCutsceneManager] tutorialManager is NULL");
+            GoBagUIManager.Instance.ShowGoBagPanel(true);
+        }
+    }
+
+    public void ContinueDialoguePart2()
+    {
+        StartCoroutine(PlayDialoguePart2());
+    }
+
+    private IEnumerator PlayDialoguePart2()
+    {
+        // Lock player again for dialogue
+        if (playerMovementScript != null)
+            playerMovementScript.enabled = false;
+
+        if (playerLookScript != null)
+        {
+            playerLookScript.LockLook();
+            playerLookScript.enabled = false;
+        }
+
+        if (dialoguePanel != null)
+            dialoguePanel.SetActive(true);
+
+        if (GameFlowManager.Instance != null)
+        {
+            GameFlowManager.Instance.SetStep(GameFlowManager.GameStep.DialoguePart2);
+        }
+
+        // PART 2 DIALOGUE
+        if (dialogueText != null && introLinesPart2 != null && introLinesPart2.Length > 0)
+        {
+            for (int i = 0; i < introLinesPart2.Length; i++)
+            {
+                dialogueText.text = introLinesPart2[i];
+
+                // Trigger earthquake on a specific dialogue line
+                if (!earthquakeTriggered && i == earthquakeTriggerLineIndex)
+                {
+                    TriggerEarthquakeResponse();
+                }
+
+                yield return new WaitForSeconds(lineDuration);
+            }
+        }
+
+        if (dialoguePanel != null)
+            dialoguePanel.SetActive(false);
+
+        // After part 2, keep movement locked
+        if (playerMovementScript != null)
+            playerMovementScript.enabled = false;
+
+        // Allow look so player can see the shaking / table
+        if (playerLookScript != null)
+        {
+            playerLookScript.enabled = true;
+            playerLookScript.UnlockLook();
+            playerLookScript.LockCursor();
         }
 
         if (classroomNPCManager != null)
         {
             classroomNPCManager.EndIntroForAllNPCs();
         }
+
+        // Show quest panel after dialogue if you want instructions visible
+        if (questPanel != null)
+            questPanel.SetActive(true);
+    }
+
+    private void TriggerEarthquakeResponse()
+    {
+        earthquakeTriggered = true;
+
+        Debug.Log("Earthquake triggered during Dialogue Part 2.");
+
+        if (GameFlowManager.Instance != null)
+        {
+            GameFlowManager.Instance.SetStep(GameFlowManager.GameStep.EarthquakeResponse);
+        }
+
+        if (earthquakeManager != null)
+        {
+            // Replace this with your actual earthquake start method if different
+            earthquakeManager.StartEarthquake();
+        }
+        else
+        {
+            Debug.LogWarning("EarthquakeManager is not assigned in IntroCutsceneManager.");
+        }
+
+        // Optional: show quest panel here immediately
+        if (questPanel != null)
+            questPanel.SetActive(true);
+
+        // If you have tutorial prompt UI later, this is where you show:
+        // "Press Ctrl to crouch"
+        // then "Press F near the table to hide"
     }
 
     private IEnumerator RotatePlayerToTeacher()

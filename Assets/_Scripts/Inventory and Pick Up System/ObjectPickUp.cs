@@ -9,18 +9,27 @@ public class ObjectPickUp : MonoBehaviour, IInteractable
 
     public bool CanInteract(GameObject interactor)
     {
-        if (GameFlowManager.Instance == null) return false;
+        if (GameFlowManager.Instance == null)
+            return false;
 
         return GameFlowManager.Instance.currentStep == GameFlowManager.GameStep.GoBag;
     }
 
     public void Interact(GameObject interactor)
     {
-        if (GoBagUIManager.Instance != null)
+        if (GameFlowManager.Instance == null)
+            return;
+
+        if (GameFlowManager.Instance.currentStep != GameFlowManager.GameStep.GoBag)
+            return;
+
+        if (GoBagUIManager.Instance == null)
         {
-            GoBagUIManager.Instance.AddItem(itemName);
+            Debug.LogWarning("GoBagUIManager not found.");
+            return;
         }
 
+        GoBagUIManager.Instance.AddItem(itemName);
         Destroy(gameObject);
     }
 }

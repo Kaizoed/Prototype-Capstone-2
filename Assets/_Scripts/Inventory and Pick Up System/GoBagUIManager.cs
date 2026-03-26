@@ -13,41 +13,61 @@ public class GoBagUIManager : MonoBehaviour
     private bool hasHealthKit;
     private bool hasWaterBottle;
     private bool hasBattery;
+    private bool isComplete;
 
     private void Awake()
     {
-        Instance = this;
+        if (Instance == null)
+            Instance = this;
+        else
+            Destroy(gameObject);
     }
 
     private void Start()
     {
+        if (goBagPanel != null)
+            goBagPanel.SetActive(false);
+
         UpdateChecklistUI();
     }
 
     public void AddItem(string itemName)
     {
+        if (isComplete)
+            return;
+
         switch (itemName)
         {
             case "Flashlight":
                 hasFlashlight = true;
                 break;
+
             case "Health Kit":
                 hasHealthKit = true;
                 break;
+
             case "Water Bottle":
                 hasWaterBottle = true;
                 break;
+
             case "Battery":
                 hasBattery = true;
                 break;
+
+            default:
+                Debug.LogWarning("Unknown Go Bag item: " + itemName);
+                return;
         }
 
         UpdateChecklistUI();
         CheckIfComplete();
     }
 
-    void UpdateChecklistUI()
+    private void UpdateChecklistUI()
     {
+        if (checklistText == null)
+            return;
+
         checklistText.text =
             "GO BAG CHECKLIST\n\n" +
             $"{(hasFlashlight ? "[✓]" : "[ ]")} Flashlight\n" +
@@ -56,22 +76,34 @@ public class GoBagUIManager : MonoBehaviour
             $"{(hasBattery ? "[✓]" : "[ ]")} Battery";
     }
 
-    void CheckIfComplete()
+    private void CheckIfComplete()
     {
         if (hasFlashlight && hasHealthKit && hasWaterBottle && hasBattery)
         {
+            isComplete = true;
             Debug.Log("Go Bag complete!");
-            goBagPanel.SetActive(false);
 
-            if (GameFlowManager.Instance != null)
+            if (goBagPanel != null)
+                goBagPanel.SetActive(false);
+
+            IntroCutsceneManager introCutsceneManager = FindFirstObjectByType<IntroCutsceneManager>();
+            if (introCutsceneManager != null)
             {
-                GameFlowManager.Instance.SetStep(GameFlowManager.GameStep.LectureDuckCoverHold);
+                introCutsceneManager.ContinueDialoguePart2();
+            }
+            else
+            {
+                Debug.LogWarning("IntroCutsceneManager not found. Cannot continue dialogue part 2.");
             }
         }
     }
 
     public void ShowGoBagPanel(bool show)
     {
-        goBagPanel.SetActive(show);
+        if (goBagPanel != null)
+            goBagPanel.SetActive(show);
+
+        if (show)
+            UpdateChecklistUI();
     }
 }

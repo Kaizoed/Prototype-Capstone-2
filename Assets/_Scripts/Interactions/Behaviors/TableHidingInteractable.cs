@@ -1,11 +1,9 @@
-using UnityEngine;
+﻿using UnityEngine;
 using ShakySurvival.Cover;
 using ShakySurvival.Earthquake;
 
 namespace ShakySurvival.Interactions.Behaviors
 {
-    // Interaction for hiding under a table.
-    // Integrates with the Cover System for entry/exit state management.
     public class TableHidingInteractable : MonoBehaviour, IInteractable
     {
         [Header("Cover Configuration")]
@@ -15,13 +13,10 @@ namespace ShakySurvival.Interactions.Behaviors
         [SerializeField] private string hidePrompt = "Hide";
         [SerializeField] private string exitPrompt = "Exit";
 
-        [Header("Quest")]
-        [SerializeField] private string hideDeskQuestId = "hide_under_desk";
-        [SerializeField] private bool completeQuestOnHide = true;
-
         private PlayerCoverController _playerController;
-        private bool _questCompleted;
+
         private bool _earthquakeActive;
+        private bool _playerSuccessfullyHidden;
 
         public string InteractionPrompt
         {
@@ -30,10 +25,14 @@ namespace ShakySurvival.Interactions.Behaviors
                 if (!_earthquakeActive)
                     return string.Empty;
 
+                if (GameFlowManager.Instance == null)
+                    return string.Empty;
+
+                if (GameFlowManager.Instance.currentStep != GameFlowManager.GameStep.EarthquakeResponse)
+                    return string.Empty;
+
                 if (_playerController != null && _playerController.CurrentState == CoverState.Hidden)
-                {
                     return exitPrompt;
-                }
 
                 return hidePrompt;
             }
@@ -66,16 +65,55 @@ namespace ShakySurvival.Interactions.Behaviors
         private void HandleEarthquakeStart()
         {
             _earthquakeActive = true;
+
+            // 👉 Step starts here
+            if (GameFlowManager.Instance != null)
+            {
+                GameFlowManager.Instance.SetStep(GameFlowManager.GameStep.EarthquakeResponse);
+            }
+
+            // 👉 First instruction: crouch
+            if (TutorialManager.Instance != null)
+            {
+                TutorialManager.Instance.ShowTutorial("Press CTRL to crouch.");
+            }
         }
 
         private void HandleEarthquakeStop()
         {
             _earthquakeActive = false;
+
+            // 👉 Only proceed if player actually hid properly
+            if (_playerSuccessfullyHidden)
+            {
+                Debug.Log("Player successfully took cover. Starting guard cutscene.");
+
+                if (TutorialManager.Instance != null)
+                {
+                    TutorialManager.Instance.HideTutorial();
+                }
+
+                if (GameFlowManager.Instance != null)
+                {
+                    GameFlowManager.Instance.SetStep(GameFlowManager.GameStep.GuardEvacuationCutscene);
+                }
+            }
+            else
+            {
+                Debug.Log("Player did NOT take cover properly.");
+                // Optional: penalty / warning
+            }
         }
 
         public bool CanInteract(GameObject interactor)
         {
             if (!_earthquakeActive)
+                return false;
+
+            if (GameFlowManager.Instance == null)
+                return false;
+
+            if (GameFlowManager.Instance.currentStep != GameFlowManager.GameStep.EarthquakeResponse)
                 return false;
 
             if (_playerController == null)
@@ -90,26 +128,21 @@ namespace ShakySurvival.Interactions.Behaviors
             }
 
             if (!_playerController.CanInteract)
-            {
                 return false;
-            }
 
             if (_playerController.CurrentState == CoverState.Idle)
             {
-                if (coverSpot == null) return false;
+                if (coverSpot == null)
+                    return false;
 
                 if (coverSpot.IsOccupied && coverSpot.Occupant != interactor)
-                {
                     return false;
-                }
 
                 return coverSpot.IsValidApproach(interactor.transform);
             }
 
             if (_playerController.CurrentState == CoverState.Hidden)
-            {
                 return true;
-            }
 
             return false;
         }
@@ -121,17 +154,30 @@ namespace ShakySurvival.Interactions.Behaviors
                 _playerController = interactor.GetComponent<PlayerCoverController>();
             }
 
-            if (_playerController == null) return;
+            if (_playerController == null)
+                return;
+
+            if (GameFlowManager.Instance == null)
+                return;
+
+            if (GameFlowManager.Instance.currentStep != GameFlowManager.GameStep.EarthquakeResponse)
+                return;
 
             if (_playerController.CurrentState == CoverState.Idle)
             {
                 bool enteredCover = _playerController.EnterCover(coverSpot);
 
-                if (enteredCover && completeQuestOnHide && !_questCompleted)
+                if (enteredCover)
                 {
-                    Debug.Log("Completing quest step: " + hideDeskQuestId);
-                    QuestManager.Instance?.CompleteStep(hideDeskQuestId);
-                    _questCompleted = true;
+                    _playerSuccessfullyHidden = true;
+
+                    Debug.Log("Player is now safely under the table.");
+
+                    // 👉 Change tutorial instruction AFTER crouch success
+                    if (TutorialManager.Instance != null)
+                    {
+                        TutorialManager.Instance.ShowTutorial("Stay under the table until shaking stops.");
+                    }
                 }
             }
             else if (_playerController.CurrentState == CoverState.Hidden)
