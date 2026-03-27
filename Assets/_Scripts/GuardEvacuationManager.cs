@@ -10,7 +10,6 @@ public class GuardEvacuationManager : MonoBehaviour
     [Header("Guard")]
     [SerializeField] private NavMeshAgent guardAgent;
     [SerializeField] private Transform guardDestination;
-    [SerializeField] private Transform guardLookTarget;
 
     [Header("Guard AI Override")]
     [SerializeField] private MonoBehaviour guardAIMovementScript;
@@ -66,45 +65,39 @@ public class GuardEvacuationManager : MonoBehaviour
         if (playerLook != null)
             playerLook.LockLook();
 
+        // Open door first
+        if (doorToOpen != null && guardAgent != null)
+        {
+            doorToOpen.OpenDoorFrom(guardAgent.gameObject);
+            yield return new WaitForSeconds(0.2f);
+        }
+
+        // Move guard to destination
         if (guardAgent != null && guardDestination != null)
         {
+            if (!guardAgent.enabled)
+                guardAgent.enabled = true;
+
             guardAgent.isStopped = false;
             guardAgent.ResetPath();
             guardAgent.SetDestination(guardDestination.position);
 
             while (true)
             {
-                if (!guardAgent.pathPending)
-                {
-                    if (guardAgent.remainingDistance <= guardAgent.stoppingDistance + 0.05f)
-                    {
-                        if (!guardAgent.hasPath || guardAgent.velocity.sqrMagnitude < 0.01f)
-                            break;
-                    }
-                }
+                if (!guardAgent.pathPending && guardAgent.remainingDistance <= 0.5f)
+                    break;
 
                 yield return null;
             }
 
+            // Snap exactly to destination and stop completely
+            guardAgent.Warp(guardDestination.position);
+            guardAgent.transform.rotation = guardDestination.rotation;
+
             guardAgent.isStopped = true;
             guardAgent.velocity = Vector3.zero;
             guardAgent.ResetPath();
-        }
-
-        if (doorToOpen != null && guardAgent != null)
-        {
-            doorToOpen.OpenDoorFrom(guardAgent.gameObject);
-        }
-
-        if (guardAgent != null && guardLookTarget != null)
-        {
-            Vector3 direction = guardLookTarget.position - guardAgent.transform.position;
-            direction.y = 0f;
-
-            if (direction.sqrMagnitude > 0.001f)
-            {
-                guardAgent.transform.rotation = Quaternion.LookRotation(direction.normalized);
-            }
+            guardAgent.enabled = false;
         }
 
         yield return new WaitForSeconds(waitAfterArrival);
@@ -120,19 +113,12 @@ public class GuardEvacuationManager : MonoBehaviour
         if (dialoguePanel != null)
             dialoguePanel.SetActive(false);
 
-        // Start student evacuation
         if (roomEvacuationCoordinator != null)
-        {
             roomEvacuationCoordinator.StartEvacuationNow();
-        }
 
-        // Start teacher evacuation
         if (classroomNPCManager != null)
-        {
             classroomNPCManager.StartTeacherEvacuation();
-        }
 
-        // Unlock player after guard says it's safe
         if (playerMovement != null)
             playerMovement.UnlockMovementOnly();
 

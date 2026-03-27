@@ -249,11 +249,15 @@ namespace ShakySurvival.Player
 
         private void HandleMovement()
         {
-            float horizontal = (IsInputLocked || IsMovementLocked) ? 0f : _moveInput.x;
-            float vertical = (IsInputLocked || IsMovementLocked) ? 0f : _moveInput.y;
+            bool guardCutsceneLock =
+    GameFlowManager.Instance != null &&
+    GameFlowManager.Instance.currentStep == GameFlowManager.GameStep.GuardEvacuationCutscene;
 
-            bool wantsToCrouch = _forcedCrouch || (!IsInputLocked && _crouchPressed);
-            bool wantsToRun = !IsInputLocked && !IsMovementLocked && _sprintPressed && !wantsToCrouch;
+            float horizontal = (IsInputLocked || IsMovementLocked || guardCutsceneLock) ? 0f : _moveInput.x;
+            float vertical = (IsInputLocked || IsMovementLocked || guardCutsceneLock) ? 0f : _moveInput.y;
+
+            bool wantsToCrouch = _forcedCrouch || (!IsInputLocked && !guardCutsceneLock && _crouchPressed);
+            bool wantsToRun = !IsInputLocked && !IsMovementLocked && !guardCutsceneLock && _sprintPressed && !wantsToCrouch;
 
             Vector3 moveDir = transform.right * horizontal + transform.forward * vertical;
             moveDir = Vector3.ClampMagnitude(moveDir, 1f);
