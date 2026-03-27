@@ -13,6 +13,9 @@ public class GoBagUIManager : MonoBehaviour
     private bool hasHealthKit;
     private bool hasWaterBottle;
     private bool hasBattery;
+    private bool hasWhistle;
+    private bool hasMask;
+    private bool hasHelmet;
     private bool isComplete;
 
     private void Awake()
@@ -53,6 +56,18 @@ public class GoBagUIManager : MonoBehaviour
             case "Battery":
                 hasBattery = true;
                 break;
+            
+            case "Whistle":
+                hasWhistle = true;
+                break;
+            
+            case "Mask":
+                hasMask = true;
+                break;
+            
+            case "Helmet":
+                hasHelmet = true;
+                break;
 
             default:
                 Debug.LogWarning("Unknown Go Bag item: " + itemName);
@@ -73,12 +88,15 @@ public class GoBagUIManager : MonoBehaviour
             $"{(hasFlashlight ? "[DONE]" : "[ ]")} Flashlight\n" +
             $"{(hasHealthKit ? "[DONE]" : "[ ]")} Health Kit\n" +
             $"{(hasWaterBottle ? "[DONE]" : "[ ]")} Water Bottle\n" +
-            $"{(hasBattery ? "[DONE]" : "[ ]")} Battery";
+            $"{(hasBattery ? "[DONE]" : "[ ]")} Battery\n" +
+            $"{(hasWhistle ? "[DONE]" : "[ ]")} Whistle\n" +
+            $"{(hasMask ? "[DONE]" : "[ ]")} Mask\n" +
+            $"{(hasHelmet ? "[DONE]" : "[ ]")} Helmet";
     }
 
     private void CheckIfComplete()
     {
-        if (hasFlashlight && hasHealthKit && hasWaterBottle && hasBattery)
+        if (hasFlashlight && hasHealthKit && hasWaterBottle && hasBattery && hasWhistle && hasMask && hasHelmet)
         {
             isComplete = true;
             Debug.Log("Go Bag complete!");
