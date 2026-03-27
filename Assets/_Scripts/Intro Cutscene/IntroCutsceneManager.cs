@@ -225,10 +225,12 @@ public class IntroCutsceneManager : MonoBehaviour
 
         Debug.Log("Earthquake triggered during Dialogue Part 2.");
 
-        // IMPORTANT: let NPCs exit intro freeze first
         if (classroomNPCManager != null)
         {
             classroomNPCManager.EndIntroForAllNPCs();
+
+            // IMPORTANT: students need their behavior graph ON during the earthquake
+            classroomNPCManager.EnableNPCBehaviors();
         }
 
         if (GameFlowManager.Instance != null)
@@ -244,7 +246,6 @@ public class IntroCutsceneManager : MonoBehaviour
         {
             Debug.LogWarning("EarthquakeManager is not assigned in IntroCutsceneManager.");
         }
-
     }
 
     private IEnumerator RotatePlayerToTeacher()

@@ -1,20 +1,22 @@
-using UnityEngine;
-using ShakySurvival.Earthquake;
+﻿using UnityEngine;
+using UnityEngine.AI;
 
 public class ClassroomNPCManager : MonoBehaviour
 {
+    [Header("Teacher / Earthquake NPCs")]
     [SerializeField] private NPCEarthquakeReaction[] classroomNPCs;
+
+    [Header("Door")]
     [SerializeField] private DoorInteractable classroomDoor;
     [SerializeField] private GameObject doorOpenerReference;
 
-    private void OnEnable()
-    {
-        EarthquakeEvents.OnEarthquakeStop += HandleEarthquakeStop;
-    }
+    [Header("Student Behavior Graph NPCs")]
+    [SerializeField] private MonoBehaviour[] behaviorAgents;
+    [SerializeField] private NavMeshAgent[] navMeshAgents;
 
-    private void OnDisable()
+    private void Awake()
     {
-        EarthquakeEvents.OnEarthquakeStop -= HandleEarthquakeStop;
+        DisableNPCBehaviors();
     }
 
     public void EndIntroForAllNPCs()
@@ -26,9 +28,65 @@ public class ClassroomNPCManager : MonoBehaviour
         }
     }
 
-    private void HandleEarthquakeStop()
+    public void DisableNPCBehaviors()
     {
-        OpenClassroomDoor();
+        foreach (var agent in behaviorAgents)
+        {
+            if (agent != null)
+                agent.enabled = false;
+        }
+
+        foreach (var nav in navMeshAgents)
+        {
+            if (nav != null)
+            {
+                nav.isStopped = true;
+                nav.velocity = Vector3.zero;
+                nav.ResetPath();
+            }
+        }
+    }
+
+    public void EnableNPCBehaviors()
+    {
+        foreach (var agent in behaviorAgents)
+        {
+            if (agent != null)
+                agent.enabled = true;
+        }
+
+        foreach (var nav in navMeshAgents)
+        {
+            if (nav != null)
+                nav.isStopped = false;
+        }
+    }
+
+    public void FreezeEarthquakeNPCsForCutscene()
+    {
+        foreach (NPCEarthquakeReaction npc in classroomNPCs)
+        {
+            if (npc != null)
+                npc.FreezeForCutscene();
+        }
+    }
+
+    public void ResumeEarthquakeNPCsAfterCutscene()
+    {
+        foreach (NPCEarthquakeReaction npc in classroomNPCs)
+        {
+            if (npc != null)
+                npc.ResumeAfterCutscene();
+        }
+    }
+
+    public void StartTeacherEvacuation()
+    {
+        foreach (NPCEarthquakeReaction npc in classroomNPCs)
+        {
+            if (npc != null)
+                npc.StartManualEvacuation();
+        }
     }
 
     public void OpenClassroomDoor()

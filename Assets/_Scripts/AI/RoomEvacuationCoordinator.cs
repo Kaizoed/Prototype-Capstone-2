@@ -139,6 +139,17 @@ namespace ShakySurvival.AI
             }
         }
 
+        public void StartEvacuationNow()
+        {
+            if (m_DelayedEvacRoutine != null)
+            {
+                StopCoroutine(m_DelayedEvacRoutine);
+                m_DelayedEvacRoutine = null;
+            }
+
+            BeginEvacuation();
+        }
+
         public void BeginEvacuation()
         {
             if (m_State != EvacuationState.Idle)

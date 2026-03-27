@@ -13,10 +13,14 @@ namespace ShakySurvival.Interactions.Behaviors
         [SerializeField] private string hidePrompt = "Hide";
         [SerializeField] private string exitPrompt = "Exit";
 
+        [Header("Guard")]
+        [SerializeField] private GuardEvacuationManager guardEvacuationManager;
+
         private PlayerCoverController _playerController;
 
         private bool _earthquakeActive;
         private bool _playerSuccessfullyHidden;
+        private bool _guardSequenceStarted;
 
         public string InteractionPrompt
         {
@@ -65,14 +69,14 @@ namespace ShakySurvival.Interactions.Behaviors
         private void HandleEarthquakeStart()
         {
             _earthquakeActive = true;
+            _playerSuccessfullyHidden = false;
+            _guardSequenceStarted = false;
 
-            // 👉 Step starts here
             if (GameFlowManager.Instance != null)
             {
                 GameFlowManager.Instance.SetStep(GameFlowManager.GameStep.EarthquakeResponse);
             }
 
-            // 👉 First instruction: crouch
             if (TutorialManager.Instance != null)
             {
                 TutorialManager.Instance.ShowTutorial("Press CTRL to crouch.");
@@ -83,25 +87,43 @@ namespace ShakySurvival.Interactions.Behaviors
         {
             _earthquakeActive = false;
 
-            // 👉 Only proceed if player actually hid properly
+            if (_guardSequenceStarted)
+                return;
+
             if (_playerSuccessfullyHidden)
             {
                 Debug.Log("Player successfully took cover. Starting guard cutscene.");
+
+                _guardSequenceStarted = true;
 
                 if (TutorialManager.Instance != null)
                 {
                     TutorialManager.Instance.HideTutorial();
                 }
 
-                if (GameFlowManager.Instance != null)
+                if (guardEvacuationManager != null && guardEvacuationManager.ClassroomNPCManager != null)
                 {
-                    GameFlowManager.Instance.SetStep(GameFlowManager.GameStep.GuardEvacuationCutscene);
+                    guardEvacuationManager.ClassroomNPCManager.DisableNPCBehaviors();
+                    guardEvacuationManager.ClassroomNPCManager.FreezeEarthquakeNPCsForCutscene();
+                }
+
+                if (guardEvacuationManager != null)
+                {
+                    guardEvacuationManager.StartGuardCutscene();
+                }
+                else
+                {
+                    Debug.LogWarning("GuardEvacuationManager is not assigned.");
                 }
             }
             else
             {
                 Debug.Log("Player did NOT take cover properly.");
-                // Optional: penalty / warning
+
+                if (TutorialManager.Instance != null)
+                {
+                    TutorialManager.Instance.HideTutorial();
+                }
             }
         }
 
@@ -173,7 +195,6 @@ namespace ShakySurvival.Interactions.Behaviors
 
                     Debug.Log("Player is now safely under the table.");
 
-                    // 👉 Change tutorial instruction AFTER crouch success
                     if (TutorialManager.Instance != null)
                     {
                         TutorialManager.Instance.ShowTutorial("Stay under the table until shaking stops.");
@@ -183,6 +204,12 @@ namespace ShakySurvival.Interactions.Behaviors
             else if (_playerController.CurrentState == CoverState.Hidden)
             {
                 _playerController.ExitCover();
+                _playerSuccessfullyHidden = false;
+
+                if (_earthquakeActive && TutorialManager.Instance != null)
+                {
+                    TutorialManager.Instance.ShowTutorial("Press F near the table to hide.");
+                }
             }
         }
     }

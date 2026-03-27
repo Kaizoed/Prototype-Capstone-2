@@ -146,7 +146,8 @@ public class DoorInteractable : MonoBehaviour, IInteractable
         if (GameFlowManager.Instance == null)
             return true;
 
-        if (GameFlowManager.Instance.currentStep == GameFlowManager.GameStep.Evacuate)
+        if (GameFlowManager.Instance.currentStep == GameFlowManager.GameStep.GuardEvacuationCutscene ||
+            GameFlowManager.Instance.currentStep == GameFlowManager.GameStep.Evacuate)
         {
             hasBeenUnlocked = true;
             return false;
