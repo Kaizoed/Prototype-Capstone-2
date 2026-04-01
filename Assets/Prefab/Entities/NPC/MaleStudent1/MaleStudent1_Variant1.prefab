@@ -120,10 +120,48 @@ MonoBehaviour:
   ikRig: {fileID: 2456410563163024705}
   npcAnimator: {fileID: 9057164568507320289}
   blendSpeed: 2
+  leftHandTarget: {fileID: 0}
+  rightHandTarget: {fileID: 0}
+  armArcCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.5
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  leftHandArcDirection: {x: 0, y: 0, z: 0}
+  rightHandArcDirection: {x: 0, y: 0, z: 0}
   m_IsCrouching: 0
   m_IsCrawling: 0
   m_IsEventActive: 0
   m_IsPostEarthquake: 0
+  m_IsDemonstrating: 0
 --- !u!1 &3489307259756302476
 GameObject:
   m_ObjectHideFlags: 0
@@ -326,15 +364,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b309d2b667bdcd040a0d5469e00defec, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -2.64
+      value: -7.2591124
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b309d2b667bdcd040a0d5469e00defec, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 6.9335055
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b309d2b667bdcd040a0d5469e00defec, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 3.274
+      value: 5.410698
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b309d2b667bdcd040a0d5469e00defec, type: 3}
       propertyPath: m_LocalRotation.w
@@ -342,15 +380,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b309d2b667bdcd040a0d5469e00defec, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b309d2b667bdcd040a0d5469e00defec, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b309d2b667bdcd040a0d5469e00defec, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b309d2b667bdcd040a0d5469e00defec, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -465,6 +503,7 @@ MonoBehaviour:
   m_Graph: {fileID: 4636287194487689448, guid: 4128b4d824c8fbe4991e98223d9f542c, type: 2}
   m_BlackboardVariableOverridesList:
   - rid: 729447115184144386
+  - rid: 6964379836399485020
   m_OriginalGraph: {fileID: 0}
   m_IsInitialised: 0
   m_IsStarted: 0
@@ -479,6 +518,14 @@ MonoBehaviour:
           m_Value1: 0
         Name: Self
         m_Value: {fileID: 2313301306727434017}
+    - rid: 6964379836399485020
+      type: {class: 'BlackboardVariable`1[[UnityEngine.GameObject, UnityEngine.CoreModule]]', ns: Unity.Behavior, asm: Unity.Behavior}
+      data:
+        GUID:
+          m_Value0: 11191631219556706679
+          m_Value1: 14215785005874749890
+        Name: TargetTable
+        m_Value: {fileID: 0}
 --- !u!114 &3005210391903799421
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -492,7 +539,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   behaviorAgent: {fileID: 2754147115944023056}
-  panicChance: 0.51
+  panicChance: 0
   reactionDelay: 2
   exitCrawlSpeed: 1.5
   exitTurnSpeed: 180
@@ -525,7 +572,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 97146255f701d9446981379d9d467ad0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  walkSpeed: 3
+  walkSpeed: 4
   runSpeed: 5
   arrivalTolerance: 0.2
   ikRigController: {fileID: 5328020611059688785}
