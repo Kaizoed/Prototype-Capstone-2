@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using TMPro;
 using ShakySurvival.Player;
 
@@ -23,6 +23,7 @@ public class GoBagUIManager : MonoBehaviour
     private bool hasMask;
     private bool hasHelmet;
     private bool isComplete;
+    private bool hardhatTutorialShown;
 
     private void Awake()
     {
@@ -62,22 +63,26 @@ public class GoBagUIManager : MonoBehaviour
             case "Battery":
                 hasBattery = true;
                 break;
-            
+
             case "Whistle":
                 hasWhistle = true;
                 break;
-            
+
             case "Mask":
                 hasMask = true;
                 break;
-            
+
             case "Helmet":
                 hasHelmet = true;
 
-                // Unlock the immersive equip ability so the player can put it on with H.
                 if (hardHatManager != null)
                     hardHatManager.GiveHardHat();
 
+                if (!hardhatTutorialShown && TutorialManager.Instance != null)
+                {
+                    hardhatTutorialShown = true;
+                    TutorialManager.Instance.ShowTutorial("Press H to wear hardhat.", 3f);
+                }
                 break;
 
             default:
@@ -109,8 +114,15 @@ public class GoBagUIManager : MonoBehaviour
     {
         if (hasFlashlight && hasHealthKit && hasWaterBottle && hasBattery && hasWhistle && hasMask && hasHelmet)
         {
+            if (isComplete) return;
+
             isComplete = true;
             Debug.Log("Go Bag complete!");
+
+            if (TutorialObjectiveUI.Instance != null)
+            {
+                TutorialObjectiveUI.Instance.CompleteObjective("go_bag");
+            }
 
             if (goBagPanel != null)
                 goBagPanel.SetActive(false);

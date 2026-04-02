@@ -1,13 +1,15 @@
 using UnityEngine;
 using TMPro;
+using System.Collections;
 
 public class TutorialManager : MonoBehaviour
 {
     public static TutorialManager Instance;
 
     [Header("UI")]
-    [SerializeField] private GameObject tutorialPanel;
     [SerializeField] private TMP_Text tutorialText;
+
+    private Coroutine hideCoroutine;
 
     private void Awake()
     {
@@ -17,28 +19,45 @@ public class TutorialManager : MonoBehaviour
             Destroy(gameObject);
     }
 
-    private void Start()
-    {
-        HideTutorial();
-    }
-
     public void ShowTutorial(string message)
     {
-        if (tutorialPanel != null)
-            tutorialPanel.SetActive(true);
-
         if (tutorialText != null)
             tutorialText.text = message;
+
+        if (UIVisibilityManager.Instance != null)
+            UIVisibilityManager.Instance.ShowTutorialPanel();
+    }
+
+    public void ShowTutorial(string message, float duration)
+    {
+        ShowTutorial(message);
+
+        if (hideCoroutine != null)
+            StopCoroutine(hideCoroutine);
+
+        hideCoroutine = StartCoroutine(HideTutorialAfterDelay(duration));
     }
 
     public void HideTutorial()
     {
-        if (tutorialPanel != null)
-            tutorialPanel.SetActive(false);
+        if (hideCoroutine != null)
+        {
+            StopCoroutine(hideCoroutine);
+            hideCoroutine = null;
+        }
+
+        if (UIVisibilityManager.Instance != null)
+            UIVisibilityManager.Instance.HideTutorialPanel();
     }
 
     public void UpdateTutorial(string message)
     {
         ShowTutorial(message);
+    }
+
+    private IEnumerator HideTutorialAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        HideTutorial();
     }
 }

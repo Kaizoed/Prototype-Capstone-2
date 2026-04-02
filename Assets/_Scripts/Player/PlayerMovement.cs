@@ -250,8 +250,8 @@ namespace ShakySurvival.Player
         private void HandleMovement()
         {
             bool guardCutsceneLock =
-    GameFlowManager.Instance != null &&
-    GameFlowManager.Instance.currentStep == GameFlowManager.GameStep.GuardEvacuationCutscene;
+                GameFlowManager.Instance != null &&
+                GameFlowManager.Instance.currentStep == GameFlowManager.GameStep.GuardEvacuationCutscene;
 
             float horizontal = (IsInputLocked || IsMovementLocked || guardCutsceneLock) ? 0f : _moveInput.x;
             float vertical = (IsInputLocked || IsMovementLocked || guardCutsceneLock) ? 0f : _moveInput.y;
@@ -356,7 +356,7 @@ namespace ShakySurvival.Player
 
                 if (TutorialManager.Instance != null)
                 {
-                    TutorialManager.Instance.ShowTutorial("Press F near the table to hide.");
+                    TutorialManager.Instance.ShowTutorial("Press F near the table to hide.", 3f);
                 }
 
                 Debug.Log("Earthquake crouch tutorial completed.");

@@ -189,6 +189,11 @@ namespace ShakySurvival.Interactions.Behaviors
             {
                 bool enteredCover = _playerController.EnterCover(coverSpot);
 
+                if (TutorialObjectiveUI.Instance != null)
+                {
+                    TutorialObjectiveUI.Instance.CompleteObjective("hide_under_desk");
+                }
+
                 if (enteredCover)
                 {
                     _playerSuccessfullyHidden = true;

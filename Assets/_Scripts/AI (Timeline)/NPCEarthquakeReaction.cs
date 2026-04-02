@@ -26,20 +26,19 @@ public class NPCEarthquakeReaction : MonoBehaviour
     [SerializeField] private bool evacuateAfterEarthquake = false;
 
     [Header("Panic Settings")]
-    [Tooltip("Chance (0-1) that this NPC panics instead of crouching during an earthquake")]
     [Range(0f, 1f)]
     [SerializeField] private float panicChance = 0.3f;
-
-    [Tooltip("How far the NPC runs during panic run segments")]
     [SerializeField] private float panicRunRadius = 8f;
-
-    [Tooltip("How long the panic animation plays before the NPC runs (seconds)")]
     [SerializeField] private float panicAnimDuration = 2f;
 
     [Header("Evacuation")]
     [SerializeField] private float evacuationStartDelay = 0f;
     [SerializeField] private bool willTripAndFall = false;
     [SerializeField] private float fallDelay = 2f;
+
+    [Header("Optional Multi-Step Evacuation")]
+    [SerializeField] private bool useIntermediateEvacuationPoint = false;
+    [SerializeField] private Transform intermediateEvacuationPoint;
 
     [Header("Optional Fall Swap")]
     [SerializeField] private GameObject standingNPCVisual;
@@ -51,20 +50,33 @@ public class NPCEarthquakeReaction : MonoBehaviour
     private bool introFinished = false;
     private bool hasFallen = false;
     private bool isPanicking = false;
+    private bool goingToFinalEvacuationPoint = false;
+    private bool evacuationStarted = false;
     private Coroutine panicCoroutine;
 
     private void Update()
     {
         if (hasFallen) return;
         if (navMeshAgent == null) return;
-        if (!evacuateAfterEarthquake) return;
-        if (isGuard) return; // Guard should not use this auto-evacuation flow
+        if (isGuard) return;
+        if (!evacuationStarted) return;
 
         if (!navMeshAgent.pathPending &&
             navMeshAgent.remainingDistance <= navMeshAgent.stoppingDistance + 0.05f)
         {
-            if (!navMeshAgent.hasPath || navMeshAgent.velocity.sqrMagnitude < 0.01f)
+            if (navMeshAgent.velocity.sqrMagnitude < 0.01f)
             {
+                if (useIntermediateEvacuationPoint &&
+                    !goingToFinalEvacuationPoint &&
+                    evacuationPoint != null)
+                {
+                    goingToFinalEvacuationPoint = true;
+                    navMeshAgent.isStopped = false;
+                    navMeshAgent.ResetPath();
+                    navMeshAgent.SetDestination(evacuationPoint.position);
+                    return;
+                }
+
                 if (animator != null)
                     animator.SetBool(isRunningParam, false);
             }
@@ -124,6 +136,8 @@ public class NPCEarthquakeReaction : MonoBehaviour
             return;
 
         hasFallen = false;
+        evacuationStarted = true;
+        goingToFinalEvacuationPoint = false;
 
         if (standingNPCVisual != null)
             standingNPCVisual.SetActive(true);
@@ -139,10 +153,18 @@ public class NPCEarthquakeReaction : MonoBehaviour
             animator.SetBool(isRunningParam, true);
         }
 
-        if (navMeshAgent != null && evacuationPoint != null)
+        if (navMeshAgent != null)
         {
             navMeshAgent.isStopped = false;
-            navMeshAgent.SetDestination(evacuationPoint.position);
+            navMeshAgent.ResetPath();
+
+            if (useIntermediateEvacuationPoint && intermediateEvacuationPoint != null)
+                navMeshAgent.SetDestination(intermediateEvacuationPoint.position);
+            else if (evacuationPoint != null)
+            {
+                goingToFinalEvacuationPoint = true;
+                navMeshAgent.SetDestination(evacuationPoint.position);
+            }
         }
     }
 
@@ -156,8 +178,6 @@ public class NPCEarthquakeReaction : MonoBehaviour
         if (!introFinished) return;
         if (!allowEarthquakeReaction) return;
 
-        Debug.Log($"[NPCEarthquakeReaction] {gameObject.name} - HandleEarthquakeStart called. panicChance={panicChance}");
-
         if (aiMovementScript != null)
             aiMovementScript.enabled = false;
 
@@ -168,7 +188,6 @@ public class NPCEarthquakeReaction : MonoBehaviour
             navMeshAgent.ResetPath();
         }
 
-        // Guard should not do random panic/crouch if you plan to control it later
         if (isGuard)
         {
             if (animator != null)
@@ -183,7 +202,6 @@ public class NPCEarthquakeReaction : MonoBehaviour
         float roll = Random.value;
         if (roll < panicChance)
         {
-            Debug.Log($"[NPCEarthquakeReaction] {gameObject.name} - PANIC (roll={roll:F2})");
             isPanicking = true;
 
             if (animator != null)
@@ -197,7 +215,6 @@ public class NPCEarthquakeReaction : MonoBehaviour
         }
         else
         {
-            Debug.Log($"[NPCEarthquakeReaction] {gameObject.name} - CROUCH (roll={roll:F2})");
             if (animator != null)
             {
                 animator.SetBool(earthquakeCrouchParam, true);
@@ -298,7 +315,6 @@ public class NPCEarthquakeReaction : MonoBehaviour
         if (animator != null)
             animator.SetBool(earthquakeCrouchParam, false);
 
-        // Guard should not auto-resume or auto-evacuate through this script
         if (isGuard)
             return;
 
@@ -319,10 +335,21 @@ public class NPCEarthquakeReaction : MonoBehaviour
     private void StartEvacuation()
     {
         if (isGuard) return;
+        if (navMeshAgent == null) return;
 
-        if (navMeshAgent != null && evacuationPoint != null)
+        evacuationStarted = true;
+        goingToFinalEvacuationPoint = false;
+
+        navMeshAgent.isStopped = false;
+        navMeshAgent.ResetPath();
+
+        if (useIntermediateEvacuationPoint && intermediateEvacuationPoint != null)
         {
-            navMeshAgent.isStopped = false;
+            navMeshAgent.SetDestination(intermediateEvacuationPoint.position);
+        }
+        else if (evacuationPoint != null)
+        {
+            goingToFinalEvacuationPoint = true;
             navMeshAgent.SetDestination(evacuationPoint.position);
         }
 
@@ -336,6 +363,7 @@ public class NPCEarthquakeReaction : MonoBehaviour
         if (isGuard) return;
 
         hasFallen = true;
+        evacuationStarted = false;
 
         if (navMeshAgent != null)
         {
@@ -360,6 +388,7 @@ public class NPCEarthquakeReaction : MonoBehaviour
     public void FreezeForCutscene()
     {
         StopPanic();
+        evacuationStarted = false;
 
         if (navMeshAgent != null)
         {

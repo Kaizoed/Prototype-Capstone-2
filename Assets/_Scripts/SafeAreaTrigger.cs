@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using ShakySurvival.Player;
 
 public class SafeAreaTrigger : MonoBehaviour
@@ -20,6 +20,13 @@ public class SafeAreaTrigger : MonoBehaviour
         if (GameFlowManager.Instance.currentStep != GameFlowManager.GameStep.Evacuate) return;
 
         triggered = true;
+
+        // ✅ COMPLETE OBJECTIVE HERE
+        if (TutorialObjectiveUI.Instance != null)
+        {
+            TutorialObjectiveUI.Instance.CompleteObjective("safe_area");
+        }
+
         GameFlowManager.Instance.SetStep(GameFlowManager.GameStep.End);
 
         // Disable player controls
