@@ -1,5 +1,6 @@
-﻿using UnityEngine;
+using UnityEngine;
 using TMPro;
+using ShakySurvival.Player;
 
 public class GoBagUIManager : MonoBehaviour
 {
@@ -8,6 +9,11 @@ public class GoBagUIManager : MonoBehaviour
     [Header("UI")]
     [SerializeField] private GameObject goBagPanel;
     [SerializeField] private TMP_Text checklistText;
+
+    [Header("Hard Hat Integration")]
+    [SerializeField, Tooltip("Reference to the HardHatImmersiveManager on the player. " +
+        "When the Helmet is picked up, this unlocks the equip ability.")]
+    private HardHatImmersiveManager hardHatManager;
 
     private bool hasFlashlight;
     private bool hasHealthKit;
@@ -67,6 +73,11 @@ public class GoBagUIManager : MonoBehaviour
             
             case "Helmet":
                 hasHelmet = true;
+
+                // Unlock the immersive equip ability so the player can put it on with H.
+                if (hardHatManager != null)
+                    hardHatManager.GiveHardHat();
+
                 break;
 
             default:
